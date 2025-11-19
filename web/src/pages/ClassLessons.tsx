@@ -6,7 +6,9 @@ import {
   useSessionsList,
   mapTopicInfoToSession,
   type Session,
+  useSessionPolling,
 } from '@awfl-web/features/sessions/public'
+import { useTopicContextYoj, YojMessageList } from '@awfl-web/features/yoj/public'
 
 function formatWhen(iso: string | undefined) {
   if (!iso) return ''
@@ -60,6 +62,26 @@ export function ClassLessonsPage() {
   // Detail route present? render the single-lesson view
   const selectedId = sessionIdParam || null
 
+  // Yoj context for the selected lesson (session)
+  const { messages, running, error: execError, reload: reloadYoj } = useTopicContextYoj({
+    sessionId: selectedId,
+    idToken,
+    windowSeconds: 3600,
+    enabled: !!selectedId,
+  })
+
+  // Poll every second while not running; no-op task reloads (we only show messages here)
+  useSessionPolling({
+    enabled: !!selectedId,
+    sessionId: selectedId,
+    activeTaskStatus: null,
+    running: !!running,
+    reloadMessages: reloadYoj,
+    reloadTaskCounts: () => {},
+    reloadInlineTasks: () => {},
+    intervalMs: 1000,
+  })
+
   if (selectedId) {
     const selected = lessons.find(s => s.id === selectedId)
     const title = selected ? (selected.title && selected.title.trim().length > 0 ? selected.title : selected.id) : selectedId
@@ -81,7 +103,12 @@ export function ClassLessonsPage() {
           >
             ← Back
           </button>
-          <button type="button" onClick={reload} className="btn btn-secondary" style={{ padding: '8px 12px' }}>
+          <button
+            type="button"
+            onClick={() => { reload(); reloadYoj(); }}
+            className="btn btn-secondary"
+            style={{ padding: '8px 12px' }}
+          >
             Refresh
           </button>
         </div>
@@ -92,7 +119,14 @@ export function ClassLessonsPage() {
             {error}
           </div>
         )}
-        <div style={{ color: '#6b7280' }}>Lesson details will appear here.</div>
+        {execError && (
+          <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginBottom: 12 }}>
+            {execError}
+          </div>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'stretch' }}>
+          <YojMessageList messages={messages as any} sessionId={selectedId || undefined} idToken={idToken || undefined} />
+        </div>
       </div>
     )
   }
