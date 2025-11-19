@@ -129,7 +129,7 @@ img, svg, video, canvas { max-width: 100%; height: auto; }
   min-height: 0;
 }
 
-/* Pearl-bordered content frame */
+/* Pearl-bordered content frame (kept for other pages; not used on lesson detail after simplification) */
 .pearl-frame {
   position: relative;
   background: var(--card);
@@ -228,15 +228,6 @@ input[type='file'] { font-family: inherit; }
   overflow: hidden;
   height: 100%;
 }
-/* Make the frame itself a flex column and contain overflow */
-.lesson-root .pearl-frame {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden; /* prevent page scroll; messages will scroll */
-  height: 100%;
-}
 
 .lesson-layout {
   display: flex;
@@ -249,16 +240,46 @@ input[type='file'] { font-family: inherit; }
 .lesson-header {
   padding-bottom: 4px;
   border-bottom: 1px solid var(--subtle);
-  background: var(--card);
+  background: transparent;
   z-index: 1;
-  position: static; /* sits above the scroll container, so no sticky needed */
 }
 .lesson-messages { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 0; }
 .lesson-footer {
   padding-top: 4px;
   border-top: 0;
-  background: var(--card);
+  background: transparent;
   z-index: 1;
-  position: static; /* sits below the scroll container */
 }
+/* Remove white background from prompt footer wrapper while keeping input field styling */
+.lesson-footer.prompt-plain { background: transparent !important; border-top: 0 !important; }
+.lesson-footer.prompt-plain > * { background: transparent !important; box-shadow: none !important; border: 0 !important; }
 @media (max-width: 640px) { .lesson-layout { } }
+
+/* --------- YojMessageList theming via CSS variables --------- */
+/* Apply to a parent wrapper around YojMessageList */
+.yoj-theme {
+  /* Assistant (the teacher/LLM) bubble */
+  --yoj-assistant-bg: var(--card); /* usually white */
+  --yoj-assistant-border: var(--subtle);
+  --yoj-assistant-label: var(--fg);
+
+  /* User bubble (tinted with accent) */
+  --yoj-user-bg: color-mix(in srgb, var(--accent) 12%, #ffffff 88%);
+  --yoj-user-border: color-mix(in srgb, var(--accent) 40%, var(--subtle));
+  --yoj-user-label: color-mix(in srgb, var(--accent-dark) 80%, #111 20%);
+
+  /* System bubble (neutral, subtle) */
+  --yoj-system-bg: color-mix(in srgb, var(--bg) 86%, #ffffff 14%);
+  --yoj-system-border: var(--subtle);
+  --yoj-system-label: var(--muted);
+
+  /* Tool calls (block with title + list) */
+  --yoj-toolcalls-bg: color-mix(in srgb, var(--bg) 80%, #ffffff 20%);
+  --yoj-toolcalls-border: var(--subtle);
+  --yoj-toolcalls-title: color-mix(in srgb, var(--accent) 55%, var(--fg));
+  --yoj-toolcall-name: color-mix(in srgb, var(--accent) 70%, #000 30%);
+
+  /* Code and meta */
+  --yoj-code-bg: #f7f7fb;
+  --yoj-meta: var(--muted);
+}

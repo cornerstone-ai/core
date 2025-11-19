@@ -167,107 +167,95 @@ export function ClassLessonsPage() {
     return (
       <div className="container" style={{ padding: '8px 12px 12px' }}>
         <div className="lesson-root">
-          <div
-            className="pearl-frame"
-            /* Ensure the frame itself provides a flex column that contains its own overflow */
-            style={{ padding: 12, display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0, overflow: 'hidden' }}
-          >
-            <div className="pearl-stickers" aria-hidden="true">
-              <span className="s1">✨</span>
-              <span className="s2">🪼</span>
-              <span className="s3">🧁</span>
-              <span className="s4">🐇</span>
-            </div>
-
-            <div className="lesson-layout">
-              {/* Header (sticks visually because only the middle scrolls) */}
-              <div className="lesson-header">
-                <div className="row" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
+          {/* Layout directly without a rounded white frame */}
+          <div className="lesson-layout">
+            {/* Header (sticks visually because only the middle scrolls) */}
+            <div className="lesson-header">
+              <div className="row" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => navigate(`/classes/${encodeURIComponent(classId)}/lessons`)}
+                  aria-label="Back to lessons"
+                >
+                  ← Back
+                </button>
+                <div className="row" style={{ gap: 6 }}>
                   <button
                     type="button"
+                    onClick={() => { reload(); reloadYoj(); }}
                     className="btn btn-secondary btn-sm"
-                    onClick={() => navigate(`/classes/${encodeURIComponent(classId)}/lessons`)}
-                    aria-label="Back to lessons"
                   >
-                    ← Back
+                    Refresh
                   </button>
-                  <div className="row" style={{ gap: 6 }}>
-                    <button
-                      type="button"
-                      onClick={() => { reload(); reloadYoj(); }}
-                      className="btn btn-secondary btn-sm"
-                    >
-                      Refresh
-                    </button>
-                    <button
-                      type="button"
-                      onClick={agent.openEdit}
-                      className="btn btn-secondary btn-sm"
-                    >
-                      Edit Teacher
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={agent.openEdit}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Edit Teacher
+                  </button>
                 </div>
-                <h1 style={{ margin: '2px 0 0', fontSize: 20 }}>{title}</h1>
-                {loading && <div style={{ color: '#6b7280', marginTop: 4 }}>Loading…</div>}
-                {error && (
-                  <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                    {error}
-                  </div>
-                )}
-                {execError && (
-                  <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                    {execError}
-                  </div>
-                )}
-                {wfError && (
-                  <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                    {wfError}
-                  </div>
-                )}
               </div>
-
-              {/* Scrollable messages area */}
-              <div ref={messagesRef} className="lesson-messages">
-                <YojMessageList
-                  messages={messages as any}
-                  sessionId={selectedId || undefined}
-                  idToken={idToken || undefined}
-                  assistantName={assistantName}
-                  hideExecGutter={isMobile}
-                />
-                {/* Bottom anchor for reliable scrollIntoView */}
-                <div ref={homeAnchorRef} aria-hidden="true" />
-              </div>
-
-              {/* Footer (submit) */}
-              <div className="lesson-footer">
-                <PromptInput
-                  placeholder={effectiveWorkflowName ? `Trigger workflow ${effectiveWorkflowName}…` : 'Type a prompt and press Enter…'}
-                  status={wfStatus}
-                  running={wfRunning}
-                  submitting={submitting}
-                  onSubmit={handlePromptSubmit}
-                  onStop={handleStop}
-                  disabled={!selectedId}
-                />
-              </div>
+              <h1 style={{ margin: '2px 0 0', fontSize: 20 }}>{title}</h1>
+              {loading && <div style={{ color: '#6b7280', marginTop: 4 }}>Loading…</div>}
+              {error && (
+                <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
+                  {error}
+                </div>
+              )}
+              {execError && (
+                <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
+                  {execError}
+                </div>
+              )}
+              {wfError && (
+                <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
+                  {wfError}
+                </div>
+              )}
             </div>
 
-            <AgentModal
-              open={agent.open}
-              mode={agent.mode}
-              initial={agent.initial || { name: agentConfig.workflowName || sessionWorkflowName || '', description: '', workflowName: sessionWorkflowName || '', tools: [] }}
-              tools={agent.tools}
-              workflows={agent.workflows}
-              workflowsLoading={agent.workflowsLoading}
-              onClose={() => agent.setOpen(false)}
-              onSave={async (input) => {
-                await agent.onSave(input)
-                await agentConfig.reload()
-              }}
-            />
+            {/* Scrollable messages area with yoj theme variables */}
+            <div ref={messagesRef} className="lesson-messages yoj-theme">
+              <YojMessageList
+                messages={messages as any}
+                sessionId={selectedId || undefined}
+                idToken={idToken || undefined}
+                assistantName={assistantName}
+                hideExecGutter={isMobile}
+              />
+              {/* Bottom anchor for reliable scrollIntoView */}
+              <div ref={homeAnchorRef} aria-hidden="true" />
+            </div>
+
+            {/* Footer (submit) without white background */}
+            <div className="lesson-footer prompt-plain">
+              <PromptInput
+                placeholder={effectiveWorkflowName ? `Trigger workflow ${effectiveWorkflowName}…` : 'Type a prompt and press Enter…'}
+                status={wfStatus}
+                running={wfRunning}
+                submitting={submitting}
+                onSubmit={handlePromptSubmit}
+                onStop={handleStop}
+                disabled={!selectedId}
+              />
+            </div>
           </div>
+
+          <AgentModal
+            open={agent.open}
+            mode={agent.mode}
+            initial={agent.initial || { name: agentConfig.workflowName || sessionWorkflowName || '', description: '', workflowName: sessionWorkflowName || '', tools: [] }}
+            tools={agent.tools}
+            workflows={agent.workflows}
+            workflowsLoading={agent.workflowsLoading}
+            onClose={() => agent.setOpen(false)}
+            onSave={async (input) => {
+              await agent.onSave(input)
+              await agentConfig.reload()
+            }}
+          />
         </div>
       </div>
     )
