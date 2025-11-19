@@ -1,0 +1,10 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://topaigents.dev/workflows/defs/org.cornerstoneai.workflows.TtsWorker.json",
+  "name" : "org.cornerstoneai.workflows.TtsWorker",
+  "description" : "Auto-generated workflow definition.",
+  "inputSchema" : "org-cornerstoneai-workflows-TtsWorker-Input",
+  "outputSchema" : "services-Llm-ChatToolResponse",
+  "inputType" : "org.cornerstoneai.workflows.TtsWorker.Input",
+  "outputType" : "services.Llm.ChatToolResponse"
+}

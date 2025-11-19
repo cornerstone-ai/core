@@ -1,0 +1,10 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://topaigents.dev/workflows/defs/org.cornerstoneai.workflows.CostAndBudgets.json",
+  "name" : "org.cornerstoneai.workflows.CostAndBudgets",
+  "description" : "Auto-generated workflow definition.",
+  "inputSchema" : "org-cornerstoneai-workflows-CostAndBudgets-Input",
+  "outputSchema" : "services-Llm-ChatToolResponse",
+  "inputType" : "org.cornerstoneai.workflows.CostAndBudgets.Input",
+  "outputType" : "services.Llm.ChatToolResponse"
+}

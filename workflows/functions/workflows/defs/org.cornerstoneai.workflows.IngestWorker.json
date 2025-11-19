@@ -1,0 +1,10 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://topaigents.dev/workflows/defs/org.cornerstoneai.workflows.IngestWorker.json",
+  "name" : "org.cornerstoneai.workflows.IngestWorker",
+  "description" : "Auto-generated workflow definition.",
+  "inputSchema" : "org-cornerstoneai-workflows-IngestWorker-Input",
+  "outputSchema" : "services-Llm-ChatToolResponse",
+  "inputType" : "org.cornerstoneai.workflows.IngestWorker.Input",
+  "outputType" : "services.Llm.ChatToolResponse"
+}

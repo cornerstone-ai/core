@@ -23,7 +23,7 @@ Tasks
       - [ ] Provide Dockerfile and publish ghcr.io/topaigents/awfl-cli:latest.
       - [ ] Docs: installation via pipx, uvx, docker; Windows/macOS/Linux notes.
 - [ ] Add Cornerstone runner similar to WorkflowBuilder (background-Cornerstone sessionId).
-- [ ] Expose invokerRunner for query-only operations (status, dry-run checks).
+- [ ] Expose an AWFL Agent runner endpoint for query-only operations (status, dry-run checks).
 - [ ] Ensure CliEventHandler registers Cornerstone runners.
 - [ ] Provide awfl-cli.sh examples:
       ./awfl-cli.sh call cornerstone-workflows-IngestWorkflow '{"docId":"d1"}'
@@ -41,7 +41,7 @@ Config model
   watch:
     enabled: true
     patterns: ["**/*.md", "**/*.scala", "**/*.yaml"]
-    trigger_regex: "\\bai:"
+    trigger_regex: "\bai:"
   subscribe:
     cli_operations: false
     autofunds: false

@@ -1,0 +1,10 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://topaigents.dev/workflows/defs/org.cornerstoneai.workflows.CliIntegration.json",
+  "name" : "org.cornerstoneai.workflows.CliIntegration",
+  "description" : "Auto-generated workflow definition.",
+  "inputSchema" : "org-cornerstoneai-workflows-CliIntegration-Input",
+  "outputSchema" : "services-Llm-ChatToolResponse",
+  "inputType" : "org.cornerstoneai.workflows.CliIntegration.Input",
+  "outputType" : "services.Llm.ChatToolResponse"
+}

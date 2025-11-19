@@ -18,5 +18,5 @@ Contents
 
 How this integrates with TopAigents
 - Reuse workflows DSL (workflows/src/main/scala/workflows) for orchestration.
-- Leverage existing runners and patterns: Tools.invokerRunner, CliEventHandler, distributed locks, and Exec link model.
+- Leverage existing runners and patterns: AWFL Agent runner pattern, CliEventHandler, distributed locks, and Exec link model.
 - Implement server-side workers using Firebase Functions/Cloud Run where appropriate; follow collection and index conventions.

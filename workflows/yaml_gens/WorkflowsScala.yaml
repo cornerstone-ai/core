@@ -1,0 +1,1510 @@
+main:
+  params:
+  - "input"
+  steps:
+  - mainTry:
+      steps:
+      - mainTry_initResult:
+          assign:
+          - mainTryResult_7b89ca19: {}
+      - mainTry_steps:
+          try:
+            steps:
+            - registerExecForSessionTry:
+                steps:
+                - registerExecForSessionTry_initResult:
+                    assign:
+                    - registerExecForSessionTryResult_69a8c8f: {}
+                - registerExecForSessionTry_steps:
+                    try:
+                      steps:
+                      - registerExecForSessionCreate:
+                          try:
+                            steps:
+                            - registerExecForSessionCreate_call:
+                                call: "http.post"
+                                args:
+                                  url: "${((input.env.BASE_URL + \"/\") + \"firebase/create\")}"
+                                  body:
+                                    collection: "${\"workflowExecsBySession\"}"
+                                    id: "${((input.env.sessionId + \":\") + sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"))}"
+                                    contents:
+                                      sessionId: "${input.env.sessionId}"
+                                      execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                      created: "${sys.now()}"
+                                    userId: "${input.env.userId}"
+                                  auth:
+                                    type: "OIDC"
+                                    audience: "${input.env.BASE_URL}"
+                                  headers:
+                                    x-user-id: "${input.env.userId}"
+                                    x-project-id: "${input.env.projectId}"
+                                result: "registerExecForSessionCreateResult_4d550d78"
+                          retry: "${http.default_retry}"
+                      - registerExecForSessionTry_updateResult:
+                          assign:
+                          - registerExecForSessionTryResult_69a8c8f: "${\"ok\"}"
+                    except:
+                      as: "registerExecForSessionTryError"
+                      steps:
+                      - registerExecForSessionSwitch:
+                          steps:
+                          - registerExecForSessionSwitch_initResult:
+                              assign:
+                              - registerExecForSessionSwitchResult_60e5087c: {}
+                          - registerExecForSessionSwitch_steps:
+                              switch:
+                              - condition: "${((\"code\" in registerExecForSessionTryError) and (registerExecForSessionTryError.code == 409))}"
+                                steps:
+                                - registerExecForSessionUpdate:
+                                    try:
+                                      steps:
+                                      - registerExecForSessionUpdate_call:
+                                          call: "http.post"
+                                          args:
+                                            url: "${((input.env.BASE_URL + \"/\") + \"firebase/update\")}"
+                                            body:
+                                              collection: "${\"workflowExecsBySession\"}"
+                                              id: "${((input.env.sessionId + \":\") + sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"))}"
+                                              contents:
+                                                sessionId: "${input.env.sessionId}"
+                                                execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                                created: "${sys.now()}"
+                                              userId: "${input.env.userId}"
+                                            auth:
+                                              type: "OIDC"
+                                              audience: "${input.env.BASE_URL}"
+                                            headers:
+                                              x-user-id: "${input.env.userId}"
+                                              x-project-id: "${input.env.projectId}"
+                                          result: "registerExecForSessionUpdateResult_722c896"
+                                    retry: "${http.default_retry}"
+                                - registerExecForSessionSwitch_updateResult_0:
+                                    assign:
+                                    - registerExecForSessionSwitchResult_60e5087c: "${\"ok\"}"
+                              - condition: "${true}"
+                                steps:
+                                - registerExecForSessionRethrow:
+                                    raise: "${registerExecForSessionTryError}"
+                                - registerExecForSessionSwitch_updateResult_1:
+                                    assign:
+                                    - registerExecForSessionSwitchResult_60e5087c: "${\"fail\"}"
+                      - registerExecForSessionTry_updateResultError:
+                          assign:
+                          - registerExecForSessionTryResult_69a8c8f: "${registerExecForSessionSwitchResult_60e5087c}"
+            - registerWorkflowExecLink:
+                steps:
+                - registerWorkflowExecLink_initResult:
+                    assign:
+                    - registerWorkflowExecLinkResult_32b10be6: {}
+                - registerWorkflowExecLink_steps:
+                    switch:
+                    - condition: "${(len(default(default(map.get(input.env, \"callingWorkflowExec\"), null), \"\")) > 0)}"
+                      steps:
+                      - registerWorkflowExecLinkTry:
+                          steps:
+                          - registerWorkflowExecLinkTry_initResult:
+                              assign:
+                              - registerWorkflowExecLinkTryResult_7e2deb69: {}
+                          - registerWorkflowExecLinkTry_steps:
+                              try:
+                                steps:
+                                - registerWorkflowExecLinkCreate:
+                                    try:
+                                      steps:
+                                      - registerWorkflowExecLinkCreate_call:
+                                          call: "http.post"
+                                          args:
+                                            url: "${((input.env.BASE_URL + \"/\") + \"firebase/create\")}"
+                                            body:
+                                              collection: "${\"workflowExecLinks\"}"
+                                              id: "${((default(map.get(input.env, \"callingWorkflowExec\"), null) + \":\") + sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"))}"
+                                              contents:
+                                                callingExec: "${default(map.get(input.env, \"callingWorkflowExec\"), null)}"
+                                                triggeredExec: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                                sessionId: "${input.env.sessionId}"
+                                                created: "${sys.now()}"
+                                              userId: "${input.env.userId}"
+                                            auth:
+                                              type: "OIDC"
+                                              audience: "${input.env.BASE_URL}"
+                                            headers:
+                                              x-user-id: "${input.env.userId}"
+                                              x-project-id: "${input.env.projectId}"
+                                          result: "registerWorkflowExecLinkCreateResult_4f55d602"
+                                    retry: "${http.default_retry}"
+                                - registerWorkflowExecLinkTry_updateResult:
+                                    assign:
+                                    - registerWorkflowExecLinkTryResult_7e2deb69: "${\"ok\"}"
+                              except:
+                                as: "registerWorkflowExecLinkTryError"
+                                steps:
+                                - registerWorkflowExecLinkSwitch:
+                                    steps:
+                                    - registerWorkflowExecLinkSwitch_initResult:
+                                        assign:
+                                        - registerWorkflowExecLinkSwitchResult_29ba20c7: {}
+                                    - registerWorkflowExecLinkSwitch_steps:
+                                        switch:
+                                        - condition: "${(registerWorkflowExecLinkTryError.code == 409)}"
+                                          steps:
+                                          - registerWorkflowExecLinkUpdate:
+                                              try:
+                                                steps:
+                                                - registerWorkflowExecLinkUpdate_call:
+                                                    call: "http.post"
+                                                    args:
+                                                      url: "${((input.env.BASE_URL + \"/\") + \"firebase/update\")}"
+                                                      body:
+                                                        collection: "${\"workflowExecLinks\"}"
+                                                        id: "${((default(map.get(input.env, \"callingWorkflowExec\"), null) + \":\") + sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"))}"
+                                                        contents:
+                                                          callingExec: "${default(map.get(input.env, \"callingWorkflowExec\"), null)}"
+                                                          triggeredExec: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                                          sessionId: "${input.env.sessionId}"
+                                                          created: "${sys.now()}"
+                                                        userId: "${input.env.userId}"
+                                                      auth:
+                                                        type: "OIDC"
+                                                        audience: "${input.env.BASE_URL}"
+                                                      headers:
+                                                        x-user-id: "${input.env.userId}"
+                                                        x-project-id: "${input.env.projectId}"
+                                                    result: "registerWorkflowExecLinkUpdateResult_7823fde"
+                                              retry: "${http.default_retry}"
+                                          - registerWorkflowExecLinkSwitch_updateResult_0:
+                                              assign:
+                                              - registerWorkflowExecLinkSwitchResult_29ba20c7: "${\"ok\"}"
+                                        - condition: "${true}"
+                                          steps:
+                                          - registerWorkflowExecLinkRethrow:
+                                              raise: "${registerWorkflowExecLinkTryError}"
+                                          - registerWorkflowExecLinkSwitch_updateResult_1:
+                                              assign:
+                                              - registerWorkflowExecLinkSwitchResult_29ba20c7: "${\"fail\"}"
+                                - registerWorkflowExecLinkTry_updateResultError:
+                                    assign:
+                                    - registerWorkflowExecLinkTryResult_7e2deb69: "${registerWorkflowExecLinkSwitchResult_29ba20c7}"
+                      - registerWorkflowExecLink_updateResult_0:
+                          assign:
+                          - registerWorkflowExecLinkResult_32b10be6: "${registerWorkflowExecLinkTryResult_7e2deb69}"
+                    - condition: "${true}"
+                      steps:
+                      - registerWorkflowExecLink_updateResult_1:
+                          assign:
+                          - registerWorkflowExecLinkResult_32b10be6: "${\"skip\"}"
+            - tryInitStatus:
+                steps:
+                - tryInitStatus_initResult:
+                    assign:
+                    - tryInitStatusResult_2792e570: {}
+                - tryInitStatus_steps:
+                    try:
+                      steps:
+                      - statusRunning:
+                          try:
+                            steps:
+                            - statusRunning_call:
+                                call: "http.post"
+                                args:
+                                  url: "${((input.env.BASE_URL + \"/\") + \"workflows/exec/status/update\")}"
+                                  body:
+                                    execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                    status: "${\"Running\"}"
+                                    ended: "${false}"
+                                    workflow: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
+                                    updated: "${sys.now()}"
+                                    error: "${null}"
+                                  auth:
+                                    type: "OIDC"
+                                    audience: "${input.env.BASE_URL}"
+                                  headers:
+                                    x-user-id: "${input.env.userId}"
+                                    x-project-id: "${input.env.projectId}"
+                                result: "statusRunningResult_2ce0001c"
+                          retry: "${http.default_retry}"
+                      - enqueueStatusRunning_enqueue_block:
+                          steps:
+                          - relay_ingest_tool_call:
+                              try:
+                                steps:
+                                - relay_ingest_tool_call_call:
+                                    call: "http.post"
+                                    args:
+                                      url: "${((input.env.BASE_URL + \"/\") + \"events\")}"
+                                      body:
+                                        sessionId: "${input.env.sessionId}"
+                                        projectId: "${input.env.projectId}"
+                                        data:
+                                          create_time: "${sys.now()}"
+                                          callback_id: "${null}"
+                                          content: "${null}"
+                                          tool_call: "${null}"
+                                          cost: "${0.0}"
+                                          background: "${default(map.get(input.env, \"background\"), false)}"
+                                          status: "${\"Running\"}"
+                                          error: "${null}"
+                                        background: "${default(map.get(input.env, \"background\"), false)}"
+                                        type: "${\"message\"}"
+                                        source: "${\"workflows.tools.CliTools\"}"
+                                      auth:
+                                        type: "OIDC"
+                                        audience: "${input.env.BASE_URL}"
+                                      headers:
+                                        x-user-id: "${input.env.userId}"
+                                        x-project-id: "${input.env.projectId}"
+                                    result: "relay_ingest_tool_callResult_40938653"
+                              retry: "${http.default_retry}"
+                      - tryInitStatus_updateResult:
+                          assign:
+                          - tryInitStatusResult_2792e570: "${null}"
+                    except:
+                      as: "tryInitStatusError"
+                      steps:
+                      - tryInitStatus_logError:
+                          try:
+                            steps:
+                            - tryInitStatus_logError_call:
+                                call: "sys.log"
+                                args:
+                                  text: "${(\"[tryInitStatus_logError] \" + tryInitStatusError.message)}"
+                                result: "tryInitStatus_logErrorResult_274f74a5"
+                          retry: "${http.default_retry}"
+                      - tryInitStatus_updateResultError:
+                          assign:
+                          - tryInitStatusResult_2792e570: "${null}"
+            - maybeSaveInputTask:
+                steps:
+                - maybeSaveInputTask_switch:
+                    steps:
+                    - maybeSaveInputTask_switch_initResult:
+                        assign:
+                        - maybeSaveInputTask_switchResult_8096c58: {}
+                    - maybeSaveInputTask_switch_steps:
+                        switch:
+                        - condition: "${(get_type(map.get(input, \"task\")) == \"map\")}"
+                          steps:
+                          - maybeSaveInputTask_post:
+                              try:
+                                steps:
+                                - maybeSaveInputTask_post_call:
+                                    call: "http.post"
+                                    args:
+                                      url: "${((input.env.BASE_URL + \"/\") + \"tasks\")}"
+                                      body:
+                                        sessionId: "${input.env.sessionId}"
+                                        title: "${map.get(map.get(input, \"task\"), \"title\")}"
+                                        description: "${map.get(map.get(input, \"task\"), \"description\")}"
+                                        status: "${default(map.get(map.get(input, \"task\"), \"status\"), \"In Progress\")}"
+                                      auth:
+                                        type: "OIDC"
+                                        audience: "${input.env.BASE_URL}"
+                                      headers:
+                                        x-user-id: "${input.env.userId}"
+                                        x-project-id: "${input.env.projectId}"
+                                    result: "maybeSaveInputTask_postResult_45f5650e"
+                              retry: "${http.default_retry}"
+                          - maybeSaveInputTask_switch_updateResult_0:
+                              assign:
+                              - maybeSaveInputTask_switchResult_8096c58:
+                                  role: "system"
+                                  content: "${(((((((((\"Task created\" + \": id=\") + string(maybeSaveInputTask_postResult_45f5650e.body.task.id)) + \" | \") + string(maybeSaveInputTask_postResult_45f5650e.body.task.title)) + \" — \") + string(maybeSaveInputTask_postResult_45f5650e.body.task.description)) + \" [status=\") + string(maybeSaveInputTask_postResult_45f5650e.body.task.status)) + \"]\")}"
+                                  tool_calls: "${[]}"
+                                  tool_call_id: "${null}"
+                                  create_time: "${sys.now()}"
+                                  docId: "${null}"
+                        - condition: "${true}"
+                          steps:
+                          - maybeSaveInputTask_switch_updateResult_1:
+                              assign:
+                              - maybeSaveInputTask_switchResult_8096c58:
+                                  role: "system"
+                                  content: "${\"No input.task provided\"}"
+                                  tool_calls: "${[]}"
+                                  tool_call_id: "${null}"
+                                  create_time: "${sys.now()}"
+                                  docId: "${null}"
+            - addMessage_seg_write_with_session_update:
+                steps:
+                - addMessage_newId:
+                    steps:
+                    - addMessage_newId_initResult:
+                        assign:
+                        - addMessage_newIdResult_cd57506: {}
+                    - addMessage_newId_steps:
+                        try:
+                          steps:
+                          - addMessage_newId_updateResult:
+                              assign:
+                              - addMessage_newIdResult_cd57506: "${uuid.generate()}"
+                        except:
+                          as: "addMessage_newIdError"
+                          steps:
+                          - addMessage_newId_logError:
+                              try:
+                                steps:
+                                - addMessage_newId_logError_call:
+                                    call: "sys.log"
+                                    args:
+                                      text: "${(\"[addMessage_newId_logError] \" + addMessage_newIdError.message)}"
+                                    result: "addMessage_newId_logErrorResult_641dd839"
+                              retry: "${http.default_retry}"
+                          - addMessage_newId_updateResultError:
+                              assign:
+                              - addMessage_newIdResult_cd57506: "${null}"
+                - addMessage_write_messagesIsta_SegKala:
+                    try:
+                      steps:
+                      - addMessage_write_messagesIsta_SegKala_call:
+                          call: "http.post"
+                          args:
+                            url: "${((input.env.BASE_URL + \"/\") + \"firebase/create\")}"
+                            body:
+                              collection: "${(((\"convo.sessions/\" + input.env.sessionId) + \"/\") + \"messages\")}"
+                              id: "${addMessage_newIdResult_cd57506}"
+                              contents:
+                                value:
+                                  role: "user"
+                                  content: "${input.query}"
+                                  tool_calls: "${[]}"
+                                  tool_call_id: "${null}"
+                                  create_time: "${sys.now()}"
+                                  docId: "${null}"
+                                create_time: "${sys.now()}"
+                                cost: "${null}"
+                                execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                              userId: "${input.env.userId}"
+                            auth:
+                              type: "OIDC"
+                              audience: "${input.env.BASE_URL}"
+                            headers:
+                              x-user-id: "${input.env.userId}"
+                              x-project-id: "${input.env.projectId}"
+                          result: "addMessage_write_messagesIsta_SegKalaResult_3abea8aa"
+                    retry: "${http.default_retry}"
+                - addMessage_update_session_update_time:
+                    try:
+                      steps:
+                      - addMessage_update_session_update_time_call:
+                          call: "http.post"
+                          args:
+                            url: "${((input.env.BASE_URL + \"/\") + \"firebase/update\")}"
+                            body:
+                              collection: "${\"convo.sessions\"}"
+                              id: "${input.env.sessionId}"
+                              contents:
+                                update_time: "${sys.now()}"
+                              userId: "${input.env.userId}"
+                            auth:
+                              type: "OIDC"
+                              audience: "${input.env.BASE_URL}"
+                            headers:
+                              x-user-id: "${input.env.userId}"
+                              x-project-id: "${input.env.projectId}"
+                          result: "addMessage_update_session_update_timeResult_798659fd"
+                    retry: "${http.default_retry}"
+            - acquireResponseLock_try:
+                steps:
+                - acquireResponseLock_try_initResult:
+                    assign:
+                    - acquireResponseLock_tryResult_a6f4e78: {}
+                - acquireResponseLock_try_steps:
+                    try:
+                      steps:
+                      - acquireResponseLock:
+                          try:
+                            steps:
+                            - acquireResponseLock_call:
+                                call: "http.post"
+                                args:
+                                  url: "${((input.env.BASE_URL + \"/\") + \"firebase/locks/acquire\")}"
+                                  body:
+                                    collection: "${\"locks.Convo.Session\"}"
+                                    id: "${input.env.sessionId}"
+                                    ttlSeconds: 300
+                                    owner: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                    userId: "${input.env.userId}"
+                                  auth:
+                                    type: "OIDC"
+                                    audience: "${input.env.BASE_URL}"
+                                  headers:
+                                    x-user-id: "${input.env.userId}"
+                                    x-project-id: "${input.env.projectId}"
+                                result: "acquireResponseLockResult_2f6bf6cd"
+                          retry: "${http.default_retry}"
+                      - acquireResponseLock_try_updateResult:
+                          assign:
+                          - acquireResponseLock_tryResult_a6f4e78: "${acquireResponseLockResult_2f6bf6cd.body.acquired}"
+                    except:
+                      as: "acquireResponseLock_tryError"
+                      steps:
+                      - acquireResponseLock_err:
+                          steps:
+                          - acquireResponseLock_err_initResult:
+                              assign:
+                              - acquireResponseLock_errResult_7f9c383c: {}
+                          - acquireResponseLock_err_steps:
+                              switch:
+                              - condition: "${((\"code\" in acquireResponseLock_tryError) and (acquireResponseLock_tryError.code == 409))}"
+                                steps:
+                                - acquireResponseLock_busy:
+                                    try:
+                                      steps:
+                                      - acquireResponseLock_busy_call:
+                                          call: "sys.log"
+                                          args:
+                                            text: "${(\"[acquireResponseLock_busy] \" + \"Lock exists, skipping work.\")}"
+                                          result: "acquireResponseLock_busyResult_76441e5c"
+                                    retry: "${http.default_retry}"
+                                - acquireResponseLock_err_updateResult_0:
+                                    assign:
+                                    - acquireResponseLock_errResult_7f9c383c: "${false}"
+                              - condition: "${true}"
+                                steps:
+                                - acquireResponseLock_rethrow:
+                                    raise: "${acquireResponseLock_tryError}"
+                                - acquireResponseLock_err_updateResult_1:
+                                    assign:
+                                    - acquireResponseLock_errResult_7f9c383c: "${false}"
+                      - acquireResponseLock_try_updateResultError:
+                          assign:
+                          - acquireResponseLock_tryResult_a6f4e78: "${acquireResponseLock_errResult_7f9c383c}"
+            - maybeRespond:
+                steps:
+                - maybeRespond_initResult:
+                    assign:
+                    - maybeRespondResult_4980d73a: {}
+                - maybeRespond_steps:
+                    switch:
+                    - condition: "${acquireResponseLock_tryResult_a6f4e78}"
+                      steps:
+                      - sessionAgent_1:
+                          steps:
+                          - sessionAgent_initResult:
+                              assign:
+                              - sessionAgentResult_2ea55757: {}
+                          - sessionAgent_steps:
+                              try:
+                                steps:
+                                - sessionAgent:
+                                    try:
+                                      steps:
+                                      - sessionAgent_call:
+                                          call: "http.get"
+                                          args:
+                                            url: "${((input.env.BASE_URL + \"/\") + (\"agents/session/\" + input.env.sessionId))}"
+                                            auth:
+                                              type: "OIDC"
+                                              audience: "${input.env.BASE_URL}"
+                                            headers:
+                                              x-user-id: "${input.env.userId}"
+                                              x-project-id: "${input.env.projectId}"
+                                          result: "sessionAgentResult_45995250"
+                                    retry: "${http.default_retry}"
+                                - sessionAgent_updateResult:
+                                    assign:
+                                    - sessionAgentResult_2ea55757: "${sessionAgentResult_45995250.body.agentId}"
+                              except:
+                                as: "sessionAgentError"
+                                steps:
+                                - sessionAgent_updateResultError:
+                                    assign:
+                                    - sessionAgentResult_2ea55757: "${\"default\"}"
+                      - agentTools:
+                          try:
+                            steps:
+                            - agentTools_call:
+                                call: "http.get"
+                                args:
+                                  url: "${((input.env.BASE_URL + \"/\") + ((\"agents/\" + sessionAgentResult_2ea55757) + \"/tools\"))}"
+                                  auth:
+                                    type: "OIDC"
+                                    audience: "${input.env.BASE_URL}"
+                                  headers:
+                                    x-user-id: "${input.env.userId}"
+                                    x-project-id: "${input.env.projectId}"
+                                result: "agentToolsResult_3ca85b79"
+                          retry: "${http.default_retry}"
+                      - cliTools_joinSteps_1:
+                          steps:
+                          - taskTools_joinSteps_1:
+                              steps:
+                              - toolsEnd:
+                                  steps:
+                                  - toolsEnd_initResult:
+                                      assign:
+                                      - toolsEndResult_18c5f08f: {}
+                                  - toolsEnd_steps:
+                                      try:
+                                        steps:
+                                        - toolsEnd_updateResult:
+                                            assign:
+                                            - toolsEndResult_18c5f08f: "${[]}"
+                                      except:
+                                        as: "toolsEndError"
+                                        steps:
+                                        - toolsEnd_logError:
+                                            try:
+                                              steps:
+                                              - toolsEnd_logError_call:
+                                                  call: "sys.log"
+                                                  args:
+                                                    text: "${(\"[toolsEnd_logError] \" + toolsEndError.message)}"
+                                                  result: "toolsEnd_logErrorResult_55058c97"
+                                            retry: "${http.default_retry}"
+                                        - toolsEnd_updateResultError:
+                                            assign:
+                                            - toolsEndResult_18c5f08f: "${null}"
+                              - buildTaskTools:
+                                  steps:
+                                  - buildTaskTools_initResult:
+                                      assign:
+                                      - buildTaskToolsResult_76b3efa8: []
+                                  - buildTaskTools_steps:
+                                      for:
+                                        value: "buildTaskToolsIdx"
+                                        range: "${[0, (2 - 1)]}"
+                                        steps:
+                                        - buildTaskTools_switch:
+                                            steps:
+                                            - buildTaskTools_switch_initResult:
+                                                assign:
+                                                - buildTaskTools_switchResult_3fa2d03f: {}
+                                            - buildTaskTools_switch_steps:
+                                                switch:
+                                                - condition: "${(buildTaskToolsIdx == 0)}"
+                                                  steps:
+                                                  - buildTaskTools_switch_updateResult_0:
+                                                      assign:
+                                                      - buildTaskTools_switchResult_3fa2d03f: "CREATE_TASK"
+                                                - condition: "${(buildTaskToolsIdx == 1)}"
+                                                  steps:
+                                                  - buildTaskTools_switch_updateResult_1:
+                                                      assign:
+                                                      - buildTaskTools_switchResult_3fa2d03f: "UPDATE_TASK"
+                                        - buildTaskTools_updateResult:
+                                            assign:
+                                            - buildTaskToolsResult_76b3efa8: "${list.concat(buildTaskToolsResult_76b3efa8, buildTaskTools_switchResult_3fa2d03f)}"
+                              - taskTools_joinSteps:
+                                  steps:
+                                  - taskTools_joinSteps_initResult:
+                                      assign:
+                                      - taskTools_joinStepsResult_34343175: []
+                                  - taskTools_joinSteps_steps:
+                                      for:
+                                        value: "taskTools_joinStepsIdx"
+                                        range: "${[0, (((0 + len(toolsEndResult_18c5f08f)) + len(buildTaskToolsResult_76b3efa8)) - 1)]}"
+                                        steps:
+                                        - taskTools_joinSteps_switch:
+                                            steps:
+                                            - taskTools_joinSteps_switch_initResult:
+                                                assign:
+                                                - taskTools_joinSteps_switchResult_792fee88: {}
+                                            - taskTools_joinSteps_switch_steps:
+                                                switch:
+                                                - condition: "${(taskTools_joinStepsIdx >= (0 + len(toolsEndResult_18c5f08f)))}"
+                                                  steps:
+                                                  - taskTools_joinSteps_switch_updateResult_0:
+                                                      assign:
+                                                      - taskTools_joinSteps_switchResult_792fee88: "${buildTaskToolsResult_76b3efa8[(taskTools_joinStepsIdx - (0 + len(toolsEndResult_18c5f08f)))]}"
+                                                - condition: "${(taskTools_joinStepsIdx >= 0)}"
+                                                  steps:
+                                                  - taskTools_joinSteps_switch_updateResult_1:
+                                                      assign:
+                                                      - taskTools_joinSteps_switchResult_792fee88: "${toolsEndResult_18c5f08f[(taskTools_joinStepsIdx - 0)]}"
+                                        - taskTools_joinSteps_updateResult:
+                                            assign:
+                                            - taskTools_joinStepsResult_34343175: "${list.concat(taskTools_joinStepsResult_34343175, taskTools_joinSteps_switchResult_792fee88)}"
+                          - buildCliTools:
+                              steps:
+                              - buildCliTools_initResult:
+                                  assign:
+                                  - buildCliToolsResult_11810b38: []
+                              - buildCliTools_steps:
+                                  for:
+                                    value: "buildCliToolsIdx"
+                                    range: "${[0, (3 - 1)]}"
+                                    steps:
+                                    - buildCliTools_switch:
+                                        steps:
+                                        - buildCliTools_switch_initResult:
+                                            assign:
+                                            - buildCliTools_switchResult_bd950f: {}
+                                        - buildCliTools_switch_steps:
+                                            switch:
+                                            - condition: "${(buildCliToolsIdx == 0)}"
+                                              steps:
+                                              - buildCliTools_switch_updateResult_0:
+                                                  assign:
+                                                  - buildCliTools_switchResult_bd950f: "READ_FILE"
+                                            - condition: "${(buildCliToolsIdx == 1)}"
+                                              steps:
+                                              - buildCliTools_switch_updateResult_1:
+                                                  assign:
+                                                  - buildCliTools_switchResult_bd950f: "UPDATE_FILE"
+                                            - condition: "${(buildCliToolsIdx == 2)}"
+                                              steps:
+                                              - buildCliTools_switch_updateResult_2:
+                                                  assign:
+                                                  - buildCliTools_switchResult_bd950f: "RUN_COMMAND"
+                                    - buildCliTools_updateResult:
+                                        assign:
+                                        - buildCliToolsResult_11810b38: "${list.concat(buildCliToolsResult_11810b38, buildCliTools_switchResult_bd950f)}"
+                          - cliTools_joinSteps:
+                              steps:
+                              - cliTools_joinSteps_initResult:
+                                  assign:
+                                  - cliTools_joinStepsResult_72fc8d55: []
+                              - cliTools_joinSteps_steps:
+                                  for:
+                                    value: "cliTools_joinStepsIdx"
+                                    range: "${[0, (((0 + len(taskTools_joinStepsResult_34343175)) + len(buildCliToolsResult_11810b38)) - 1)]}"
+                                    steps:
+                                    - cliTools_joinSteps_switch:
+                                        steps:
+                                        - cliTools_joinSteps_switch_initResult:
+                                            assign:
+                                            - cliTools_joinSteps_switchResult_572fa29a: {}
+                                        - cliTools_joinSteps_switch_steps:
+                                            switch:
+                                            - condition: "${(cliTools_joinStepsIdx >= (0 + len(taskTools_joinStepsResult_34343175)))}"
+                                              steps:
+                                              - cliTools_joinSteps_switch_updateResult_0:
+                                                  assign:
+                                                  - cliTools_joinSteps_switchResult_572fa29a: "${buildCliToolsResult_11810b38[(cliTools_joinStepsIdx - (0 + len(taskTools_joinStepsResult_34343175)))]}"
+                                            - condition: "${(cliTools_joinStepsIdx >= 0)}"
+                                              steps:
+                                              - cliTools_joinSteps_switch_updateResult_1:
+                                                  assign:
+                                                  - cliTools_joinSteps_switchResult_572fa29a: "${taskTools_joinStepsResult_34343175[(cliTools_joinStepsIdx - 0)]}"
+                                    - cliTools_joinSteps_updateResult:
+                                        assign:
+                                        - cliTools_joinStepsResult_72fc8d55: "${list.concat(cliTools_joinStepsResult_72fc8d55, cliTools_joinSteps_switchResult_572fa29a)}"
+                      - toolNamesCandidate:
+                          steps:
+                          - toolNamesCandidate_initResult:
+                              assign:
+                              - toolNamesCandidateResult_44b00f1b: {}
+                          - toolNamesCandidate_steps:
+                              switch:
+                              - condition: "${(len(agentToolsResult_3ca85b79.body.tools) > 0)}"
+                                steps:
+                                - toolNamesCandidate_updateResult_0:
+                                    assign:
+                                    - toolNamesCandidateResult_44b00f1b: "${agentToolsResult_3ca85b79.body.tools}"
+                              - condition: "${true}"
+                                steps:
+                                - toolNamesCandidate_updateResult_1:
+                                    assign:
+                                    - toolNamesCandidateResult_44b00f1b: "${cliTools_joinStepsResult_72fc8d55}"
+                      - toolDefs:
+                          try:
+                            steps:
+                            - toolDefs_call:
+                                call: "googleapis.workflowexecutions.v1.projects.locations.workflows.executions.run"
+                                args:
+                                  workflow_id: "${\"helpers-ToolDefs${WORKFLOW_ENV}\"}"
+                                  argument:
+                                    toolNames: "${toolNamesCandidateResult_44b00f1b}"
+                                    env:
+                                      userId: "${input.env.userId}"
+                                      model: "${input.env.model}"
+                                      callingWorkflowExec: "${default(sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"), null)}"
+                                      BASE_URL: "${input.env.BASE_URL}"
+                                      background: "${default(map.get(input.env, \"background\"), null)}"
+                                      projectId: "${input.env.projectId}"
+                                      sessionId: "${input.env.sessionId}"
+                                  location: "${sys.get_env(\"GOOGLE_CLOUD_LOCATION\")}"
+                                  project_id: "${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}"
+                                  connector_params:
+                                    skip_polling: false
+                                result: "toolDefsResult_16746360"
+                          retry: "${http.default_retry}"
+                      - inSession:
+                          steps:
+                          - topicContextYojBlock_SegKala:
+                              steps:
+                              - topicContext_components_SegKala_1:
+                                  steps:
+                                  - topicContext_components_SegKala_initResult:
+                                      assign:
+                                      - topicContext_components_SegKalaResult_799d261b: []
+                                  - topicContext_components_SegKala_steps:
+                                      for:
+                                        value: "topicContext_components_SegKalaIdx"
+                                        range: "${[0, (1 - 1)]}"
+                                        steps:
+                                        - topicContext_components_SegKala_switch:
+                                            steps:
+                                            - topicContext_components_SegKala_switch_initResult:
+                                                assign:
+                                                - topicContext_components_SegKala_switchResult_65aaf8c5: {}
+                                            - topicContext_components_SegKala_switch_steps:
+                                                switch:
+                                                - condition: "${(topicContext_components_SegKalaIdx == 0)}"
+                                                  steps:
+                                                  - topicContext_components_SegKala_switch_updateResult_0:
+                                                      assign:
+                                                      - topicContext_components_SegKala_switchResult_65aaf8c5:
+                                                          kind: "yoj"
+                                                          name: "topicContext"
+                                                          framing: "${null}"
+                                                          value: "${null}"
+                                                          children:
+                                                          - kind: "yoj"
+                                                            name: "topicInfos"
+                                                            framing: "Previously extracted topic info:\r"
+                                                            value: "${null}"
+                                                            children: []
+                                                          - kind: "yoj"
+                                                            name: "convoContext"
+                                                            framing: "${null}"
+                                                            value: "${null}"
+                                                            children:
+                                                            - kind: "yoj"
+                                                              name: "summaries"
+                                                              framing: "Summary of older conversation messages:\r"
+                                                              value: "${null}"
+                                                              children: []
+                                                            - kind: "yoj"
+                                                              name: "messages"
+                                                              framing: ""
+                                                              value: "${null}"
+                                                              children: []
+                                        - topicContext_components_SegKala_updateResult:
+                                            assign:
+                                            - topicContext_components_SegKalaResult_799d261b: "${list.concat(topicContext_components_SegKalaResult_799d261b, topicContext_components_SegKala_switchResult_65aaf8c5)}"
+                              - topicContext_model_SegKala:
+                                  steps:
+                                  - topicContext_model_SegKala_initResult:
+                                      assign:
+                                      - topicContext_model_SegKalaResult_4e34cfef: {}
+                                  - topicContext_model_SegKala_steps:
+                                      try:
+                                        steps:
+                                        - topicContext_components_SegKala:
+                                            steps:
+                                            - topicContext_components_SegKala_initResult_1:
+                                                assign:
+                                                - topicContext_components_SegKalaResult_799d261b: []
+                                            - topicContext_components_SegKala_steps_1:
+                                                for:
+                                                  value: "topicContext_components_SegKalaIdx"
+                                                  range: "${[0, (1 - 1)]}"
+                                                  steps:
+                                                  - topicContext_components_SegKala_switch_1:
+                                                      steps:
+                                                      - topicContext_components_SegKala_switch_initResult_1:
+                                                          assign:
+                                                          - topicContext_components_SegKala_switchResult_65aaf8c5: {}
+                                                      - topicContext_components_SegKala_switch_steps_1:
+                                                          switch:
+                                                          - condition: "${(topicContext_components_SegKalaIdx == 0)}"
+                                                            steps:
+                                                            - topicContext_components_SegKala_switch_updateResult_0_1:
+                                                                assign:
+                                                                - topicContext_components_SegKala_switchResult_65aaf8c5:
+                                                                    kind: "yoj"
+                                                                    name: "topicContext"
+                                                                    framing: "${null}"
+                                                                    value: "${null}"
+                                                                    children:
+                                                                    - kind: "yoj"
+                                                                      name: "topicInfos"
+                                                                      framing: "Previously extracted topic info:\r"
+                                                                      value: "${null}"
+                                                                      children: []
+                                                                    - kind: "yoj"
+                                                                      name: "convoContext"
+                                                                      framing: "${null}"
+                                                                      value: "${null}"
+                                                                      children:
+                                                                      - kind: "yoj"
+                                                                        name: "summaries"
+                                                                        framing: "Summary of older conversation messages:\r"
+                                                                        value: "${null}"
+                                                                        children: []
+                                                                      - kind: "yoj"
+                                                                        name: "messages"
+                                                                        framing: ""
+                                                                        value: "${null}"
+                                                                        children: []
+                                                  - topicContext_components_SegKala_updateResult_1:
+                                                      assign:
+                                                      - topicContext_components_SegKalaResult_799d261b: "${list.concat(topicContext_components_SegKalaResult_799d261b, topicContext_components_SegKala_switchResult_65aaf8c5)}"
+                                        - topicContext_model_SegKala_updateResult:
+                                            assign:
+                                            - topicContext_model_SegKalaResult_4e34cfef:
+                                                intro:
+                                                  system: "These are the previously extracted topic information, as well as the conversation context: "
+                                                promoteUpstream: true
+                                                components: "${topicContext_components_SegKalaResult_799d261b}"
+                                                filters: "${null}"
+                                      except:
+                                        as: "topicContext_model_SegKalaError"
+                                        steps:
+                                        - topicContext_model_SegKala_logError:
+                                            try:
+                                              steps:
+                                              - topicContext_model_SegKala_logError_call:
+                                                  call: "sys.log"
+                                                  args:
+                                                    text: "${(\"[topicContext_model_SegKala_logError] \" + topicContext_model_SegKalaError.message)}"
+                                                  result: "topicContext_model_SegKala_logErrorResult_40d9a46c"
+                                            retry: "${http.default_retry}"
+                                        - topicContext_model_SegKala_updateResultError:
+                                            assign:
+                                            - topicContext_model_SegKalaResult_4e34cfef: "${null}"
+                              - TopicContextYoj_run_with_model:
+                                  try:
+                                    steps:
+                                    - TopicContextYoj_run_with_model_call:
+                                        call: "http.post"
+                                        args:
+                                          url: "${((input.env.BASE_URL + \"/\") + \"context/topicContextYoj/run\")}"
+                                          body:
+                                            kala:
+                                              kind: "${\"SegKala\"}"
+                                              sessionId: "${input.env.sessionId}"
+                                              end: "${sys.now()}"
+                                              windowSeconds: 1200.0
+                                              sessionEnd: "${null}"
+                                              weekEnd: "${null}"
+                                              begin: "${null}"
+                                            presetId: "${null}"
+                                            includeDocId: "${true}"
+                                            model: "${topicContext_model_SegKalaResult_4e34cfef}"
+                                          auth:
+                                            type: "OIDC"
+                                            audience: "${input.env.BASE_URL}"
+                                          headers:
+                                            x-user-id: "${input.env.userId}"
+                                            x-project-id: "${input.env.projectId}"
+                                        result: "TopicContextYoj_run_with_modelResult_4499273"
+                                  retry: "${http.default_retry}"
+                              - for_topicContext_items_SegKala:
+                                  steps:
+                                  - for_topicContext_items_SegKala_initResult:
+                                      assign:
+                                      - for_topicContext_items_SegKalaResult_55db9122: []
+                                  - for_topicContext_items_SegKala_steps:
+                                      for:
+                                        value: "for_topicContext_items_SegKalaValue"
+                                        in: "${TopicContextYoj_run_with_modelResult_4499273.body.yoj}"
+                                        steps:
+                                        - for_topicContext_items_SegKala_updateResult:
+                                            assign:
+                                            - for_topicContext_items_SegKalaResult_55db9122: "${list.concat(for_topicContext_items_SegKalaResult_55db9122, for_topicContext_items_SegKalaValue)}"
+                          - complete_block:
+                              steps:
+                              - complete_switch:
+                                  steps:
+                                  - complete_switch_initResult:
+                                      assign:
+                                      - complete_switchResult_2f17019f: {}
+                                  - complete_switch_steps:
+                                      switch:
+                                      - condition: "${(len(for_topicContext_items_SegKalaResult_55db9122) > 0)}"
+                                        steps:
+                                        - WorkflowsScala_prompts:
+                                            try:
+                                              steps:
+                                              - WorkflowsScala_prompts_call:
+                                                  call: "googleapis.workflowexecutions.v1.projects.locations.workflows.executions.run"
+                                                  args:
+                                                    workflow_id: "${\"WorkflowsScala-prompts${WORKFLOW_ENV}\"}"
+                                                    argument: "${input}"
+                                                    location: "${sys.get_env(\"GOOGLE_CLOUD_LOCATION\")}"
+                                                    project_id: "${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}"
+                                                    connector_params:
+                                                      skip_polling: false
+                                                  result: "WorkflowsScala_promptsResult_4d2ea81d"
+                                            retry: "${http.default_retry}"
+                                        - complete_joinMessages:
+                                            steps:
+                                            - complete_joinMessages_initResult:
+                                                assign:
+                                                - complete_joinMessagesResult_64bbf3e1: []
+                                            - complete_joinMessages_steps:
+                                                for:
+                                                  value: "complete_joinMessagesIdx"
+                                                  range: "${[0, (((0 + len(WorkflowsScala_promptsResult_4d2ea81d.prompts)) + len(for_topicContext_items_SegKalaResult_55db9122)) - 1)]}"
+                                                  steps:
+                                                  - complete_joinMessages_switch:
+                                                      steps:
+                                                      - complete_joinMessages_switch_initResult:
+                                                          assign:
+                                                          - complete_joinMessages_switchResult_4cef3ceb: {}
+                                                      - complete_joinMessages_switch_steps:
+                                                          switch:
+                                                          - condition: "${(complete_joinMessagesIdx >= (0 + len(WorkflowsScala_promptsResult_4d2ea81d.prompts)))}"
+                                                            steps:
+                                                            - complete_joinMessages_switch_updateResult_0:
+                                                                assign:
+                                                                - complete_joinMessages_switchResult_4cef3ceb: "${for_topicContext_items_SegKalaResult_55db9122[(complete_joinMessagesIdx - (0 + len(WorkflowsScala_promptsResult_4d2ea81d.prompts)))]}"
+                                                          - condition: "${(complete_joinMessagesIdx >= 0)}"
+                                                            steps:
+                                                            - complete_joinMessages_switch_updateResult_1:
+                                                                assign:
+                                                                - complete_joinMessages_switchResult_4cef3ceb: "${WorkflowsScala_promptsResult_4d2ea81d.prompts[(complete_joinMessagesIdx - 0)]}"
+                                                  - complete_joinMessages_updateResult:
+                                                      assign:
+                                                      - complete_joinMessagesResult_64bbf3e1: "${list.concat(complete_joinMessagesResult_64bbf3e1, complete_joinMessages_switchResult_4cef3ceb)}"
+                                        - complete_chat:
+                                            try:
+                                              steps:
+                                              - complete_chat_call:
+                                                  call: "http.post"
+                                                  args:
+                                                    url: "${((input.env.BASE_URL + \"/\") + \"llm/chat\")}"
+                                                    body:
+                                                      messages: "${complete_joinMessagesResult_64bbf3e1}"
+                                                      model: "${input.env.model}"
+                                                      temperature: 0.8
+                                                      max_completion_tokens: "${null}"
+                                                      response_format:
+                                                        type: "text"
+                                                      tools: "${toolDefsResult_16746360.defs}"
+                                                      tool_choice: "${if(((toolDefsResult_16746360.defs != null) and (len(toolDefsResult_16746360.defs) > 0)), \"auto\", null)}"
+                                                    auth:
+                                                      type: "OIDC"
+                                                      audience: "${input.env.BASE_URL}"
+                                                    headers:
+                                                      x-user-id: "${input.env.userId}"
+                                                      x-project-id: "${input.env.projectId}"
+                                                  result: "complete_chatResult_51c2966b"
+                                            retry: "${http.default_retry}"
+                                        - complete_switch_updateResult_0:
+                                            assign:
+                                            - complete_switchResult_2f17019f: "${complete_chatResult_51c2966b.body}"
+                                      - condition: "${true}"
+                                        steps:
+                                        - emptyYoj:
+                                            raise:
+                                              message: "${\"Empty Yoj returned\"}"
+                                              code: "${400}"
+                                        - complete_switch_updateResult_1:
+                                            assign:
+                                            - complete_switchResult_2f17019f: "${null}"
+                          - addResponse_seg_write_with_session_update:
+                              steps:
+                              - addResponse_newId:
+                                  steps:
+                                  - addResponse_newId_initResult:
+                                      assign:
+                                      - addResponse_newIdResult_677c84db: {}
+                                  - addResponse_newId_steps:
+                                      try:
+                                        steps:
+                                        - addResponse_newId_updateResult:
+                                            assign:
+                                            - addResponse_newIdResult_677c84db: "${uuid.generate()}"
+                                      except:
+                                        as: "addResponse_newIdError"
+                                        steps:
+                                        - addResponse_newId_logError:
+                                            try:
+                                              steps:
+                                              - addResponse_newId_logError_call:
+                                                  call: "sys.log"
+                                                  args:
+                                                    text: "${(\"[addResponse_newId_logError] \" + addResponse_newIdError.message)}"
+                                                  result: "addResponse_newId_logErrorResult_5531d2db"
+                                            retry: "${http.default_retry}"
+                                        - addResponse_newId_updateResultError:
+                                            assign:
+                                            - addResponse_newIdResult_677c84db: "${null}"
+                              - addResponse_write_messagesIsta_SegKala:
+                                  try:
+                                    steps:
+                                    - addResponse_write_messagesIsta_SegKala_call:
+                                        call: "http.post"
+                                        args:
+                                          url: "${((input.env.BASE_URL + \"/\") + \"firebase/create\")}"
+                                          body:
+                                            collection: "${(((\"convo.sessions/\" + input.env.sessionId) + \"/\") + \"messages\")}"
+                                            id: "${addResponse_newIdResult_677c84db}"
+                                            contents:
+                                              value:
+                                                role: "${complete_switchResult_2f17019f.message.role}"
+                                                content: "${complete_switchResult_2f17019f.message.content}"
+                                                tool_calls: "${map.get(complete_switchResult_2f17019f.message, \"tool_calls\")}"
+                                                tool_call_id: "${null}"
+                                                create_time: "${sys.now()}"
+                                                docId: "${null}"
+                                              create_time: "${sys.now()}"
+                                              cost: "${complete_switchResult_2f17019f.total_cost}"
+                                              execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                            userId: "${input.env.userId}"
+                                          auth:
+                                            type: "OIDC"
+                                            audience: "${input.env.BASE_URL}"
+                                          headers:
+                                            x-user-id: "${input.env.userId}"
+                                            x-project-id: "${input.env.projectId}"
+                                        result: "addResponse_write_messagesIsta_SegKalaResult_44987ca3"
+                                  retry: "${http.default_retry}"
+                              - addResponse_update_session_update_time:
+                                  try:
+                                    steps:
+                                    - addResponse_update_session_update_time_call:
+                                        call: "http.post"
+                                        args:
+                                          url: "${((input.env.BASE_URL + \"/\") + \"firebase/update\")}"
+                                          body:
+                                            collection: "${\"convo.sessions\"}"
+                                            id: "${input.env.sessionId}"
+                                            contents:
+                                              update_time: "${sys.now()}"
+                                            userId: "${input.env.userId}"
+                                          auth:
+                                            type: "OIDC"
+                                            audience: "${input.env.BASE_URL}"
+                                          headers:
+                                            x-user-id: "${input.env.userId}"
+                                            x-project-id: "${input.env.projectId}"
+                                        result: "addResponse_update_session_update_timeResult_11831e3d"
+                                  retry: "${http.default_retry}"
+                      - sendContents:
+                          steps:
+                          - sendContents_initResult:
+                              assign:
+                              - sendContentsResult_14d83dc3: {}
+                          - sendContents_steps:
+                              switch:
+                              - condition: "${(\"content\" in complete_switchResult_2f17019f.message)}"
+                                steps:
+                                - enqueueContent_enqueue_block:
+                                    steps:
+                                    - relay_ingest_tool_call_1:
+                                        try:
+                                          steps:
+                                          - relay_ingest_tool_call_call_1:
+                                              call: "http.post"
+                                              args:
+                                                url: "${((input.env.BASE_URL + \"/\") + \"events\")}"
+                                                body:
+                                                  sessionId: "${input.env.sessionId}"
+                                                  projectId: "${input.env.projectId}"
+                                                  data:
+                                                    create_time: "${sys.now()}"
+                                                    callback_id: "${null}"
+                                                    content: "${complete_switchResult_2f17019f.message.content}"
+                                                    tool_call: "${null}"
+                                                    cost: "${complete_switchResult_2f17019f.total_cost}"
+                                                    background: "${default(map.get(input.env, \"background\"), false)}"
+                                                    status: "${\"\"}"
+                                                    error: "${null}"
+                                                  background: "${default(map.get(input.env, \"background\"), false)}"
+                                                  type: "${\"message\"}"
+                                                  source: "${\"workflows.tools.CliTools\"}"
+                                                auth:
+                                                  type: "OIDC"
+                                                  audience: "${input.env.BASE_URL}"
+                                                headers:
+                                                  x-user-id: "${input.env.userId}"
+                                                  x-project-id: "${input.env.projectId}"
+                                              result: "relay_ingest_tool_callResult_449f0fef"
+                                        retry: "${http.default_retry}"
+                                - sendContents_updateResult_0:
+                                    assign:
+                                    - sendContentsResult_14d83dc3: "${null}"
+                              - condition: "${true}"
+                                steps:
+                                - sendContents_updateResult_1:
+                                    assign:
+                                    - sendContentsResult_14d83dc3: "${null}"
+                      - processToolCalls:
+                          try:
+                            steps:
+                            - processToolCalls_call:
+                                call: "googleapis.workflowexecutions.v1.projects.locations.workflows.executions.run"
+                                args:
+                                  workflow_id: "${\"helpers-ToolDispatcher${WORKFLOW_ENV}\"}"
+                                  argument:
+                                    totalCost: "${complete_switchResult_2f17019f.total_cost}"
+                                    toolCalls: "${default(map.get(complete_switchResult_2f17019f.message, \"tool_calls\"), [])}"
+                                    toolDefs: "${toolDefsResult_16746360.defs}"
+                                    env:
+                                      userId: "${input.env.userId}"
+                                      model: "${input.env.model}"
+                                      callingWorkflowExec: "${default(sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"), null)}"
+                                      BASE_URL: "${input.env.BASE_URL}"
+                                      background: "${default(map.get(input.env, \"background\"), null)}"
+                                      projectId: "${input.env.projectId}"
+                                      sessionId: "${input.env.sessionId}"
+                                  location: "${sys.get_env(\"GOOGLE_CLOUD_LOCATION\")}"
+                                  project_id: "${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}"
+                                  connector_params:
+                                    skip_polling: false
+                                result: "processToolCallsResult_4b952d39"
+                          retry: "${http.default_retry}"
+                      - releaseResponseLock:
+                          try:
+                            steps:
+                            - releaseResponseLock_call:
+                                call: "http.post"
+                                args:
+                                  url: "${((input.env.BASE_URL + \"/\") + \"firebase/locks/release\")}"
+                                  body:
+                                    collection: "${\"locks.Convo.Session\"}"
+                                    id: "${input.env.sessionId}"
+                                    owner: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                    userId: "${input.env.userId}"
+                                  auth:
+                                    type: "OIDC"
+                                    audience: "${input.env.BASE_URL}"
+                                  headers:
+                                    x-user-id: "${input.env.userId}"
+                                    x-project-id: "${input.env.projectId}"
+                                result: "releaseResponseLockResult_2fdba835"
+                          retry: "${http.default_retry}"
+                      - toolsCost:
+                          steps:
+                          - toolsCost_initResult:
+                              assign:
+                              - toolsCostResult_594a4839: "${0}"
+                          - toolsCost_steps:
+                              for:
+                                value: "toolsCostValue"
+                                in: "${processToolCallsResult_4b952d39.results}"
+                                steps:
+                                - toolsCost_updateResult:
+                                    assign:
+                                    - toolsCostResult_594a4839: "${(toolsCostResult_594a4839 + toolsCostValue.cost)}"
+                      - maybeToolFeedback:
+                          steps:
+                          - maybeToolFeedback_initResult:
+                              assign:
+                              - maybeToolFeedbackResult_7274cc73: {}
+                          - maybeToolFeedback_steps:
+                              switch:
+                              - condition: "${(len(processToolCallsResult_4b952d39.results) > 0)}"
+                                steps:
+                                - toolCallsCompleted:
+                                    try:
+                                      steps:
+                                      - toolCallsCompleted_call:
+                                          call: "googleapis.workflowexecutions.v1.projects.locations.workflows.executions.run"
+                                          args:
+                                            workflow_id: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
+                                            argument:
+                                              query: "${\"Tool calls completed\"}"
+                                              fund: "${(input.fund - (complete_switchResult_2f17019f.total_cost + toolsCostResult_594a4839))}"
+                                              task: "${null}"
+                                              env:
+                                                userId: "${input.env.userId}"
+                                                model: "${input.env.model}"
+                                                callingWorkflowExec: "${default(sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"), null)}"
+                                                BASE_URL: "${input.env.BASE_URL}"
+                                                background: "${default(map.get(input.env, \"background\"), null)}"
+                                                projectId: "${input.env.projectId}"
+                                                sessionId: "${input.env.sessionId}"
+                                            location: "${sys.get_env(\"GOOGLE_CLOUD_LOCATION\")}"
+                                            project_id: "${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}"
+                                            connector_params:
+                                              skip_polling: false
+                                          result: "toolCallsCompletedResult_88d76f3"
+                                    retry: "${http.default_retry}"
+                                - maybeToolFeedback_updateResult_0:
+                                    assign:
+                                    - maybeToolFeedbackResult_7274cc73: "${toolCallsCompletedResult_88d76f3}"
+                              - condition: "${true}"
+                                steps:
+                                - maybeToolFeedback_updateResult_1:
+                                    assign:
+                                    - maybeToolFeedbackResult_7274cc73: "${complete_switchResult_2f17019f}"
+                      - runSummaries:
+                          try:
+                            steps:
+                            - runSummaries_call:
+                                call: "googleapis.workflowexecutions.v1.projects.locations.workflows.executions.run"
+                                args:
+                                  workflow_id: "${\"Summaries-All-Latest-wrapper${WORKFLOW_ENV}\"}"
+                                  argument:
+                                    arg1: "${input.env.sessionId}"
+                                    arg2: "${null}"
+                                    arg3: "${1200}"
+                                    arg4: "${240}"
+                                    env:
+                                      userId: "${input.env.userId}"
+                                      model: "${input.env.model}"
+                                      callingWorkflowExec: "${default(sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"), null)}"
+                                      BASE_URL: "${input.env.BASE_URL}"
+                                      background: "${default(map.get(input.env, \"background\"), null)}"
+                                      projectId: "${input.env.projectId}"
+                                      sessionId: "${input.env.sessionId}"
+                                  location: "${sys.get_env(\"GOOGLE_CLOUD_LOCATION\")}"
+                                  project_id: "${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}"
+                                  connector_params:
+                                    skip_polling: true
+                                result: "runSummariesResult_b17dd34"
+                          retry: "${http.default_retry}"
+                      - extractTopics:
+                          try:
+                            steps:
+                            - extractTopics_call:
+                                call: "googleapis.workflowexecutions.v1.projects.locations.workflows.executions.run"
+                                args:
+                                  workflow_id: "${\"assistant-ExtractTopics-All-Latest-wrapper${WORKFLOW_ENV}\"}"
+                                  argument:
+                                    arg1: "${input.env.sessionId}"
+                                    arg2: "${null}"
+                                    arg3: "${1200}"
+                                    arg4: "${240}"
+                                    env:
+                                      userId: "${input.env.userId}"
+                                      model: "${input.env.model}"
+                                      callingWorkflowExec: "${default(sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"), null)}"
+                                      BASE_URL: "${input.env.BASE_URL}"
+                                      background: "${default(map.get(input.env, \"background\"), null)}"
+                                      projectId: "${input.env.projectId}"
+                                      sessionId: "${input.env.sessionId}"
+                                  location: "${sys.get_env(\"GOOGLE_CLOUD_LOCATION\")}"
+                                  project_id: "${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}"
+                                  connector_params:
+                                    skip_polling: true
+                                result: "extractTopicsResult_47da05d8"
+                          retry: "${http.default_retry}"
+                      - collapseMessages_try:
+                          steps:
+                          - collapseMessages_try_initResult:
+                              assign:
+                              - collapseMessages_tryResult_2ee71180: {}
+                          - collapseMessages_try_steps:
+                              try:
+                                steps:
+                                - segmentsForSession_block:
+                                    steps:
+                                    - segmentsForSession_fetch:
+                                        try:
+                                          steps:
+                                          - segmentsForSession_fetch_call:
+                                              call: "http.post"
+                                              args:
+                                                url: "${((input.env.BASE_URL + \"/\") + \"firebase/segmentsForSession\")}"
+                                                body:
+                                                  collection: "${(((\"convo.sessions/\" + input.env.sessionId) + \"/\") + \"messages\")}"
+                                                  windowSeconds: "${240}"
+                                                  overlapSeconds: "${48}"
+                                                  userId: "${input.env.userId}"
+                                                auth:
+                                                  type: "OIDC"
+                                                  audience: "${input.env.BASE_URL}"
+                                                headers:
+                                                  x-user-id: "${input.env.userId}"
+                                                  x-project-id: "${input.env.projectId}"
+                                              result: "segmentsForSession_fetchResult_72f793ad"
+                                        retry: "${http.default_retry}"
+                                    - segmentsForSession_convert:
+                                        steps:
+                                        - segmentsForSession_convert_initResult:
+                                            assign:
+                                            - segmentsForSession_convertResult_62fb199b: []
+                                        - segmentsForSession_convert_steps:
+                                            for:
+                                              value: "segmentsForSession_convertValue"
+                                              in: "${segmentsForSession_fetchResult_72f793ad.body.segments}"
+                                              steps:
+                                              - segmentsForSession_convert_assignIterResult:
+                                                  assign:
+                                                  - segmentsForSession_convert_assignIterResultVar:
+                                                      sessionId: "${input.env.sessionId}"
+                                                      end: "${segmentsForSession_convertValue.end}"
+                                                      windowSeconds: "${240}"
+                                              - segmentsForSession_convert_updateResult:
+                                                  assign:
+                                                  - segmentsForSession_convertResult_62fb199b: "${list.concat(segmentsForSession_convertResult_62fb199b, segmentsForSession_convert_assignIterResultVar)}"
+                                - collapseMessages:
+                                    try:
+                                      steps:
+                                      - collapseMessages_call:
+                                          call: "googleapis.workflowexecutions.v1.projects.locations.workflows.executions.run"
+                                          args:
+                                            workflow_id: "${\"context-ContextCollapser-SegKala${WORKFLOW_ENV}\"}"
+                                            argument:
+                                              arg1: "${input.env.sessionId}"
+                                              arg2: "${segmentsForSession_convertResult_62fb199b[(len(segmentsForSession_convertResult_62fb199b) - 1)].end}"
+                                              arg3: "${240}"
+                                              arg4: "${48}"
+                                              env:
+                                                userId: "${input.env.userId}"
+                                                model: "${input.env.model}"
+                                                callingWorkflowExec: "${default(sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"), null)}"
+                                                BASE_URL: "${input.env.BASE_URL}"
+                                                background: "${default(map.get(input.env, \"background\"), null)}"
+                                                projectId: "${input.env.projectId}"
+                                                sessionId: "${input.env.sessionId}"
+                                            location: "${sys.get_env(\"GOOGLE_CLOUD_LOCATION\")}"
+                                            project_id: "${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}"
+                                            connector_params:
+                                              skip_polling: true
+                                          result: "collapseMessagesResult_428a6819"
+                                    retry: "${http.default_retry}"
+                                - collapseMessages_try_updateResult:
+                                    assign:
+                                    - collapseMessages_tryResult_2ee71180: "${collapseMessagesResult_428a6819}"
+                              except:
+                                as: "collapseMessages_tryError"
+                                steps:
+                                - collapseMessages_try_logError:
+                                    try:
+                                      steps:
+                                      - collapseMessages_try_logError_call:
+                                          call: "sys.log"
+                                          args:
+                                            text: "${(\"[collapseMessages_try_logError] \" + collapseMessages_tryError.message)}"
+                                          result: "collapseMessages_try_logErrorResult_5f85f85b"
+                                    retry: "${http.default_retry}"
+                                - collapseMessages_try_updateResultError:
+                                    assign:
+                                    - collapseMessages_tryResult_2ee71180: "${null}"
+                      - statusDone:
+                          try:
+                            steps:
+                            - statusDone_call:
+                                call: "http.post"
+                                args:
+                                  url: "${((input.env.BASE_URL + \"/\") + \"workflows/exec/status/update\")}"
+                                  body:
+                                    execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                    status: "${\"Done\"}"
+                                    ended: "${true}"
+                                    workflow: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
+                                    updated: "${sys.now()}"
+                                    error: "${null}"
+                                  auth:
+                                    type: "OIDC"
+                                    audience: "${input.env.BASE_URL}"
+                                  headers:
+                                    x-user-id: "${input.env.userId}"
+                                    x-project-id: "${input.env.projectId}"
+                                result: "statusDoneResult_5e4d68b"
+                          retry: "${http.default_retry}"
+                      - enqueueStatusDone_enqueue_block:
+                          steps:
+                          - relay_ingest_tool_call_2:
+                              try:
+                                steps:
+                                - relay_ingest_tool_call_call_2:
+                                    call: "http.post"
+                                    args:
+                                      url: "${((input.env.BASE_URL + \"/\") + \"events\")}"
+                                      body:
+                                        sessionId: "${input.env.sessionId}"
+                                        projectId: "${input.env.projectId}"
+                                        data:
+                                          create_time: "${sys.now()}"
+                                          callback_id: "${null}"
+                                          content: "${null}"
+                                          tool_call: "${null}"
+                                          cost: "${0.0}"
+                                          background: "${default(map.get(input.env, \"background\"), false)}"
+                                          status: "${\"Done\"}"
+                                          error: "${null}"
+                                        background: "${default(map.get(input.env, \"background\"), false)}"
+                                        type: "${\"message\"}"
+                                        source: "${\"workflows.tools.CliTools\"}"
+                                      auth:
+                                        type: "OIDC"
+                                        audience: "${input.env.BASE_URL}"
+                                      headers:
+                                        x-user-id: "${input.env.userId}"
+                                        x-project-id: "${input.env.projectId}"
+                                    result: "relay_ingest_tool_callResult_6afa578b"
+                              retry: "${http.default_retry}"
+                      - maybeRespond_updateResult_0:
+                          assign:
+                          - maybeRespondResult_4980d73a: "${maybeToolFeedbackResult_7274cc73}"
+                    - condition: "${true}"
+                      steps:
+                      - maybeRespond_updateResult_1:
+                          assign:
+                          - maybeRespondResult_4980d73a: "${null}"
+            - mainTry_updateResult:
+                assign:
+                - mainTryResult_7b89ca19: "${maybeRespondResult_4980d73a}"
+          except:
+            as: "mainTryError"
+            steps:
+            - releaseResponseLock_1:
+                try:
+                  steps:
+                  - releaseResponseLock_call_1:
+                      call: "http.post"
+                      args:
+                        url: "${((input.env.BASE_URL + \"/\") + \"firebase/locks/release\")}"
+                        body:
+                          collection: "${\"locks.Convo.Session\"}"
+                          id: "${input.env.sessionId}"
+                          owner: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                          userId: "${input.env.userId}"
+                        auth:
+                          type: "OIDC"
+                          audience: "${input.env.BASE_URL}"
+                        headers:
+                          x-user-id: "${input.env.userId}"
+                          x-project-id: "${input.env.projectId}"
+                      result: "releaseResponseLockResult_2fdba835"
+                retry: "${http.default_retry}"
+            - statusFailed:
+                try:
+                  steps:
+                  - statusFailed_call:
+                      call: "http.post"
+                      args:
+                        url: "${((input.env.BASE_URL + \"/\") + \"workflows/exec/status/update\")}"
+                        body:
+                          execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                          status: "${\"Failed\"}"
+                          ended: "${true}"
+                          workflow: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
+                          updated: "${sys.now()}"
+                          error: "${default(default(map.get(mainTryError, [\"body\", \"error\", \"message\"]), map.get(mainTryError, \"message\")), \"Unknown error\")}"
+                        auth:
+                          type: "OIDC"
+                          audience: "${input.env.BASE_URL}"
+                        headers:
+                          x-user-id: "${input.env.userId}"
+                          x-project-id: "${input.env.projectId}"
+                      result: "statusFailedResult_5ff01e63"
+                retry: "${http.default_retry}"
+            - enqueueStatusFailed_enqueue_block:
+                steps:
+                - relay_ingest_tool_call_3:
+                    try:
+                      steps:
+                      - relay_ingest_tool_call_call_3:
+                          call: "http.post"
+                          args:
+                            url: "${((input.env.BASE_URL + \"/\") + \"events\")}"
+                            body:
+                              sessionId: "${input.env.sessionId}"
+                              projectId: "${input.env.projectId}"
+                              data:
+                                create_time: "${sys.now()}"
+                                callback_id: "${null}"
+                                content: "${null}"
+                                tool_call: "${null}"
+                                cost: "${0.0}"
+                                background: "${default(map.get(input.env, \"background\"), false)}"
+                                status: "${\"Failed\"}"
+                                error: "${default(default(map.get(mainTryError, [\"body\", \"error\", \"message\"]), map.get(mainTryError, \"message\")), \"Unknown error\")}"
+                              background: "${default(map.get(input.env, \"background\"), false)}"
+                              type: "${\"message\"}"
+                              source: "${\"workflows.tools.CliTools\"}"
+                            auth:
+                              type: "OIDC"
+                              audience: "${input.env.BASE_URL}"
+                            headers:
+                              x-user-id: "${input.env.userId}"
+                              x-project-id: "${input.env.projectId}"
+                          result: "relay_ingest_tool_callResult_24183314"
+                    retry: "${http.default_retry}"
+            - ReRaise_error:
+                raise: "${mainTryError}"
+            - mainTry_updateResultError:
+                assign:
+                - mainTryResult_7b89ca19: "${null}"
+  - return:
+      return: "${mainTryResult_7b89ca19}"

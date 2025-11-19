@@ -1,0 +1,10 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://topaigents.dev/workflows/defs/org.cornerstoneai.workflows.SecurityAndAuth.json",
+  "name" : "org.cornerstoneai.workflows.SecurityAndAuth",
+  "description" : "Auto-generated workflow definition.",
+  "inputSchema" : "org-cornerstoneai-workflows-SecurityAndAuth-Input",
+  "outputSchema" : "services-Llm-ChatToolResponse",
+  "inputType" : "org.cornerstoneai.workflows.SecurityAndAuth.Input",
+  "outputType" : "services.Llm.ChatToolResponse"
+}

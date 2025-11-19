@@ -39,7 +39,7 @@ Non-Goals (MVP)
 - No live editing of generated questions; provide export and basic review first.
 
 Key Reuse from TopAigents
-- DSL Workflows: Workflow, Tools.invokerRunner, CliEventHandler.
+- DSL Workflows: Workflow, AWFL Agent runner pattern, CliEventHandler.
 - Distributed locks pattern scoped by ista.name and Kala type.
 - Exec link model and endpoints to stitch multi-job pipelines.
 - HTTP post helper, Pub/Sub conventions, and telemetry guards.

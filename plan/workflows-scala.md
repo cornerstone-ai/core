@@ -12,7 +12,7 @@ Tasks
 - [ ] Implement VideoWorkflow composing outputs with ffmpeg container.
 - [ ] Implement PublishWorkflow writing manifests and updating Firestore.
 - [ ] Optional RethemeWorkflow.
-- [ ] Add Tools.invokerRunner for Cornerstone; sessionId background-Cornerstone.
+- [ ] Add AWFL Agent runner for Cornerstone; sessionId background-Cornerstone.
 - [ ] Preload AGENT.md and workflow source; include diagnostics (yaml gens, now UTC).
 - [ ] Register runners in CliEventHandler; enforce TopicContext filter order.
 - [ ] Telemetry counters tagged by KalaType and ista.name; map 409 to skip.

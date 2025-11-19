@@ -36,7 +36,7 @@ Core Workflows
 - Steps: reuse narration if voice unchanged; recompose video with new assets/music.
 
 Implementation Notes
-- Use Tools.invokerRunner to expose a Cornerstone background runner.
+- Use the AWFL Agent runner pattern to expose a Cornerstone background runner.
 - Reuse post(...) helper to call server endpoints from workflows when needed.
 - Capture telemetry counters per Kala type and ista.name.
 - Ensure toolCallBackfill and sizeLimiter filters are honored in TopicContextYoj.

@@ -1,0 +1,10 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://topaigents.dev/workflows/defs/org.cornerstoneai.workflows.TestingAndQa.json",
+  "name" : "org.cornerstoneai.workflows.TestingAndQa",
+  "description" : "Auto-generated workflow definition.",
+  "inputSchema" : "org-cornerstoneai-workflows-TestingAndQa-Input",
+  "outputSchema" : "services-Llm-ChatToolResponse",
+  "inputType" : "org.cornerstoneai.workflows.TestingAndQa.Input",
+  "outputType" : "services.Llm.ChatToolResponse"
+}

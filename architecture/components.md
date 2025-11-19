@@ -1,57 +1,77 @@
-Components and Responsibilities
+Cornerstone Web Architecture (aligned with awfl-web)
 
-Frontend (Cornerstone UI aligned with awfl-web architecture)
-- Composition principles
-  - Thin page orchestrators: compose state and render components; avoid inline data fetching.
-  - Stateless presentational components: render-only; accept normalized data via props.
-  - Cohesive hooks: useXyz hooks fetch and manage side effects; accept enabled and return { data, loading, error, reload }.
-  - Centralized API client: one jobs/client module applies Authorization, X-Skip-Auth (dev), and userAuthToken semantics.
-  - Stable types and mappers: normalize backend shapes into shared types in utils; UI does not depend on raw backend docs.
-  - File-size target: modules ~≤275 lines; extract helpers into utils as needed.
-  - Abort/resilience: cancel in-flight requests on dependency changes; swallow per-item mapping errors; log non-fatal issues.
-  - App shell/scrolling: outer container manages height; inner panels own overflow with overscrollBehavior: contain.
+Purpose
+- Document the UI modules, layering, and shared kit usage for the Cornerstone frontend.
+- Ensure clean, modular development with encapsulated feature modules and thin pages.
 
-Views and Components
-- DocumentListPage (/cornerstone)
-  - Uses useDocumentsList hook; filters and quick actions; consumes Sidebar and Header from shared kit.
-- NewDocumentPage (/cornerstone/new)
-  - UploadWidget (signed URL + progress), RegisterDocument form; integrates with client.signUpload and client.registerDoc.
-- DocumentDetailPage (/cornerstone/:docId)
-  - StatusTimeline, ArtifactsList, PreviewPlayer, ThemeSelector; polling via usePolling; Firestore listeners where applicable.
+Layering model
+- pages/
+  - Thin orchestrators. Compose feature modules and coordinate route params and local UI state.
+  - Allowed imports: features/*/public, core/public, types/public, lib/public.
+  - Forbidden: api/* internals, other features’ internals.
+- features/<domain>/
+  - Owns hooks, components, mappers, and types for the domain.
+  - Exposes a stable, minimal public.ts surface (components, hooks, mappers, types).
+  - Internals remain private; cross-feature usage goes only through public.ts.
+- core/public
+  - Cross-cutting hooks/services (e.g., useAbortableAsync, usePolling, useDebouncedValue).
+- api/
+  - Centralized client (apiClient). Only feature hooks call it. Pages never import api directly.
+- lib/public and types/public
+  - Pure utilities and shared types; no side-effects.
+- kit/
+  - Temporary local UI primitives (Button, IconButton, Skeleton, ErrorBanner) until @awfl/kit is integrated.
 
-Shared library (awfl-kit) for reuse across awfl-web and Cornerstone
-- UI primitives: Sidebar, Header, List scaffolds, Button, Input, Skeleton, ErrorBanner, Toast.
-- Hooks: useAbortableAsync, usePolling, useDebouncedValue, list/data hook templates.
-- Services: jobsClient-style API client, auth header helpers, fetch with AbortController, optional retry/backoff.
-- Types/mappers: base normalized types (Session/Context-like) and defensive mapper helpers.
+Routing and features
+- /cornerstone (Document list)
+  - features/documents: list documents, statuses, quick actions.
+  - features/status: StatusTimeline mapping doc status transitions.
+- /cornerstone/new (Upload)
+  - features/upload: UploadWidget (signed URL flow, validations, progress) and document registration.
+- /cornerstone/:docId (Detail)
+  - features/artifacts: ArtifactsList querying /docs/:docId/artifacts with download/preview links.
+  - features/preview: PreviewPlayer (video with subtitles; audio fallback; text preview when needed).
+  - features/themes: ThemeSelector and theme trigger for recomposition.
+  - features/status: live status/polling UI.
 
-API/Server (Firebase Functions/Express)
-- POST /api/cornerstone/uploads/sign → signed URL for Storage.
-- POST /api/cornerstone/docs/register → create doc, enqueue IngestWorkflow.
-- POST /api/cornerstone/docs/:docId/generate → enqueue full pipeline or selective stages.
-- GET /api/cornerstone/docs/:docId → metadata and status.
-- GET /api/cornerstone/docs/:docId/artifacts → list asset URLs.
-- GET /api/cornerstone/themes → list themes.
+Theming model (from SPEC)
+- Theme ids: lightPink, lightBlue, lightGreen, lightOrange, lightYellow, lightPurple, grey, lightRed.
+- Each theme provides tokens:
+  - colors: background, surface, accent, text, textMuted, border.
+  - assets: decorative set (e.g., pearls, strawberries, bunnies for lightPink) used around the activity frame.
+  - audio: cute game music loop; sound button uses a darker tone of the theme.
+  - iconography: theme button is a three-star icon.
+- Rendering guidance:
+  - Designs outline the activity frame (rectangle) with pearls/decors around it; keep content accessible (contrast ≥ AA).
+  - Respect prefers-reduced-motion; allow mute; music off by default.
 
-Workers
-- Ingest Worker (Node/Cloud Run or Function)
-  - Detect file type; extract text; normalize to JSON with {blocks, headings, images, tables} + source hash.
-- NLP Worker (Scala DSL + LLM service)
-  - Outline, section summaries; generate flashcards, quiz items, and worksheet prompts; reuse services.Llm.
-- TTS Worker
-  - Google Cloud Text-to-Speech; voice per theme; per-section wav/mp3; SRT/WEBVTT.
-- Video Composer (Cloud Run container with ffmpeg)
-  - Assemble frames/background; overlay theme assets and subtitles; mix background music.
-- Publisher
-  - Upload assets to Storage with metadata; update Firestore; set cache headers.
+Hooks and resilience
+- Hooks accept `enabled` and return { data, loading, error, reload }.
+- Use AbortController; guard setState on unmount; swallow per-item mapping errors and log to console.
+- Normalize backend shapes at the boundary with mapper utils; UI uses stable types.
 
-Security and Auth
-- Firebase Auth on client; Firestore rules isolate users.
-- Signed URLs for upload/download; Cloud Run IAM for internal workers.
+API client
+- Centralize headers and base path logic.
+  - Authorization: Bearer <idToken> when signed in.
+  - X-Skip-Auth: 1 when VITE_SKIP_AUTH=1 for local dev.
+  - Dev proxy: Vite proxies /api to backend.
 
-Best practices carried from awfl-web
-- Minimal diffs; conservative refactors; keep PRs small and focused.
-- Explicit inputs/outputs; avoid implicit coupling and globals.
-- Defensive mapping; tolerant rendering for missing data; keep logs non-invasive.
-- Debounce text inputs 150–250ms; thread reload controls from hooks to UI.
-- Verify unauthenticated and VITE_SKIP_AUTH=1 dev bypass flows; ensure no memory leaks or stale UI on fast navigation.
+Testing and accessibility
+- Keyboard navigation and ARIA on UploadWidget, ThemeSelector, and players.
+- Color contrast AA, focus outlines visible.
+- Abort tests: switching docs cancels in-flight fetches.
+- Unauth + VITE_SKIP_AUTH=1 flows must not crash.
+
+Public import surfaces (examples)
+- Pages import only from feature public barrels:
+  - import { UploadWidget } from '../features/upload/public'
+  - import { ThemeSelector } from '../features/themes/public'
+  - import { StatusTimeline } from '../features/status/public'
+  - import { ArtifactsList } from '../features/artifacts/public'
+  - import { PreviewPlayer } from '../features/preview/public'
+  - import { useDocumentsList } from '../features/documents/public'
+  - import { useAbortableAsync } from '../core/public'
+
+Next steps toward shared kit
+- Introduce @awfl/kit for primitives (Button, Input, Skeleton, ErrorBanner) and hooks (useAbortableAsync, usePolling).
+- Replace local kit and core hooks with awfl-kit equivalents once published.

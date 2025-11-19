@@ -1,0 +1,311 @@
+main:
+  params:
+  - "input"
+  steps:
+  - mainTry:
+      steps:
+      - mainTry_initResult:
+          assign:
+          - mainTryResult_6bfd9f9e: {}
+      - mainTry_steps:
+          try:
+            steps:
+            - registerExecForSessionTry:
+                steps:
+                - registerExecForSessionTry_initResult:
+                    assign:
+                    - registerExecForSessionTryResult_69a8c8f: {}
+                - registerExecForSessionTry_steps:
+                    try:
+                      steps:
+                      - registerExecForSessionCreate:
+                          try:
+                            steps:
+                            - registerExecForSessionCreate_call:
+                                call: "http.post"
+                                args:
+                                  url: "${((input.env.BASE_URL + \"/\") + \"firebase/create\")}"
+                                  body:
+                                    collection: "${\"workflowExecsBySession\"}"
+                                    id: "${((input.env.sessionId + \":\") + sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"))}"
+                                    contents:
+                                      sessionId: "${input.env.sessionId}"
+                                      execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                      created: "${sys.now()}"
+                                    userId: "${input.env.userId}"
+                                  auth:
+                                    type: "OIDC"
+                                    audience: "${input.env.BASE_URL}"
+                                  headers:
+                                    x-user-id: "${input.env.userId}"
+                                    x-project-id: "${input.env.projectId}"
+                                result: "registerExecForSessionCreateResult_4d550d78"
+                          retry: "${http.default_retry}"
+                      - registerExecForSessionTry_updateResult:
+                          assign:
+                          - registerExecForSessionTryResult_69a8c8f: "${\"ok\"}"
+                    except:
+                      as: "registerExecForSessionTryError"
+                      steps:
+                      - registerExecForSessionSwitch:
+                          steps:
+                          - registerExecForSessionSwitch_initResult:
+                              assign:
+                              - registerExecForSessionSwitchResult_60e5087c: {}
+                          - registerExecForSessionSwitch_steps:
+                              switch:
+                              - condition: "${((\"code\" in registerExecForSessionTryError) and (registerExecForSessionTryError.code == 409))}"
+                                steps:
+                                - registerExecForSessionUpdate:
+                                    try:
+                                      steps:
+                                      - registerExecForSessionUpdate_call:
+                                          call: "http.post"
+                                          args:
+                                            url: "${((input.env.BASE_URL + \"/\") + \"firebase/update\")}"
+                                            body:
+                                              collection: "${\"workflowExecsBySession\"}"
+                                              id: "${((input.env.sessionId + \":\") + sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"))}"
+                                              contents:
+                                                sessionId: "${input.env.sessionId}"
+                                                execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                                created: "${sys.now()}"
+                                              userId: "${input.env.userId}"
+                                            auth:
+                                              type: "OIDC"
+                                              audience: "${input.env.BASE_URL}"
+                                            headers:
+                                              x-user-id: "${input.env.userId}"
+                                              x-project-id: "${input.env.projectId}"
+                                          result: "registerExecForSessionUpdateResult_722c896"
+                                    retry: "${http.default_retry}"
+                                - registerExecForSessionSwitch_updateResult_0:
+                                    assign:
+                                    - registerExecForSessionSwitchResult_60e5087c: "${\"ok\"}"
+                              - condition: "${true}"
+                                steps:
+                                - registerExecForSessionRethrow:
+                                    raise: "${registerExecForSessionTryError}"
+                                - registerExecForSessionSwitch_updateResult_1:
+                                    assign:
+                                    - registerExecForSessionSwitchResult_60e5087c: "${\"fail\"}"
+                      - registerExecForSessionTry_updateResultError:
+                          assign:
+                          - registerExecForSessionTryResult_69a8c8f: "${registerExecForSessionSwitchResult_60e5087c}"
+            - registerWorkflowExecLink:
+                steps:
+                - registerWorkflowExecLink_initResult:
+                    assign:
+                    - registerWorkflowExecLinkResult_32b10be6: {}
+                - registerWorkflowExecLink_steps:
+                    switch:
+                    - condition: "${(len(default(default(map.get(input.env, \"callingWorkflowExec\"), null), \"\")) > 0)}"
+                      steps:
+                      - registerWorkflowExecLinkTry:
+                          steps:
+                          - registerWorkflowExecLinkTry_initResult:
+                              assign:
+                              - registerWorkflowExecLinkTryResult_7e2deb69: {}
+                          - registerWorkflowExecLinkTry_steps:
+                              try:
+                                steps:
+                                - registerWorkflowExecLinkCreate:
+                                    try:
+                                      steps:
+                                      - registerWorkflowExecLinkCreate_call:
+                                          call: "http.post"
+                                          args:
+                                            url: "${((input.env.BASE_URL + \"/\") + \"firebase/create\")}"
+                                            body:
+                                              collection: "${\"workflowExecLinks\"}"
+                                              id: "${((default(map.get(input.env, \"callingWorkflowExec\"), null) + \":\") + sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"))}"
+                                              contents:
+                                                callingExec: "${default(map.get(input.env, \"callingWorkflowExec\"), null)}"
+                                                triggeredExec: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                                sessionId: "${input.env.sessionId}"
+                                                created: "${sys.now()}"
+                                              userId: "${input.env.userId}"
+                                            auth:
+                                              type: "OIDC"
+                                              audience: "${input.env.BASE_URL}"
+                                            headers:
+                                              x-user-id: "${input.env.userId}"
+                                              x-project-id: "${input.env.projectId}"
+                                          result: "registerWorkflowExecLinkCreateResult_4f55d602"
+                                    retry: "${http.default_retry}"
+                                - registerWorkflowExecLinkTry_updateResult:
+                                    assign:
+                                    - registerWorkflowExecLinkTryResult_7e2deb69: "${\"ok\"}"
+                              except:
+                                as: "registerWorkflowExecLinkTryError"
+                                steps:
+                                - registerWorkflowExecLinkSwitch:
+                                    steps:
+                                    - registerWorkflowExecLinkSwitch_initResult:
+                                        assign:
+                                        - registerWorkflowExecLinkSwitchResult_29ba20c7: {}
+                                    - registerWorkflowExecLinkSwitch_steps:
+                                        switch:
+                                        - condition: "${(registerWorkflowExecLinkTryError.code == 409)}"
+                                          steps:
+                                          - registerWorkflowExecLinkUpdate:
+                                              try:
+                                                steps:
+                                                - registerWorkflowExecLinkUpdate_call:
+                                                    call: "http.post"
+                                                    args:
+                                                      url: "${((input.env.BASE_URL + \"/\") + \"firebase/update\")}"
+                                                      body:
+                                                        collection: "${\"workflowExecLinks\"}"
+                                                        id: "${((default(map.get(input.env, \"callingWorkflowExec\"), null) + \":\") + sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\"))}"
+                                                        contents:
+                                                          callingExec: "${default(map.get(input.env, \"callingWorkflowExec\"), null)}"
+                                                          triggeredExec: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                                          sessionId: "${input.env.sessionId}"
+                                                          created: "${sys.now()}"
+                                                        userId: "${input.env.userId}"
+                                                      auth:
+                                                        type: "OIDC"
+                                                        audience: "${input.env.BASE_URL}"
+                                                      headers:
+                                                        x-user-id: "${input.env.userId}"
+                                                        x-project-id: "${input.env.projectId}"
+                                                    result: "registerWorkflowExecLinkUpdateResult_7823fde"
+                                              retry: "${http.default_retry}"
+                                          - registerWorkflowExecLinkSwitch_updateResult_0:
+                                              assign:
+                                              - registerWorkflowExecLinkSwitchResult_29ba20c7: "${\"ok\"}"
+                                        - condition: "${true}"
+                                          steps:
+                                          - registerWorkflowExecLinkRethrow:
+                                              raise: "${registerWorkflowExecLinkTryError}"
+                                          - registerWorkflowExecLinkSwitch_updateResult_1:
+                                              assign:
+                                              - registerWorkflowExecLinkSwitchResult_29ba20c7: "${\"fail\"}"
+                                - registerWorkflowExecLinkTry_updateResultError:
+                                    assign:
+                                    - registerWorkflowExecLinkTryResult_7e2deb69: "${registerWorkflowExecLinkSwitchResult_29ba20c7}"
+                      - registerWorkflowExecLink_updateResult_0:
+                          assign:
+                          - registerWorkflowExecLinkResult_32b10be6: "${registerWorkflowExecLinkTryResult_7e2deb69}"
+                    - condition: "${true}"
+                      steps:
+                      - registerWorkflowExecLink_updateResult_1:
+                          assign:
+                          - registerWorkflowExecLinkResult_32b10be6: "${\"skip\"}"
+            - createCallback:
+                try:
+                  steps:
+                  - createCallback_call:
+                      call: "events.create_callback_endpoint"
+                      args:
+                        http_callback_method: "${\"POST\"}"
+                      result: "createCallbackResult_1bffcb86"
+                retry: "${http.default_retry}"
+            - saveCallback:
+                try:
+                  steps:
+                  - saveCallback_call:
+                      call: "http.post"
+                      args:
+                        url: "${((input.env.BASE_URL + \"/\") + \"callbacks\")}"
+                        body:
+                          callback_url: "${createCallbackResult_1bffcb86.url}"
+                        auth:
+                          type: "OIDC"
+                          audience: "${input.env.BASE_URL}"
+                        headers:
+                          x-user-id: "${input.env.userId}"
+                          x-project-id: "${input.env.projectId}"
+                      result: "saveCallbackResult_30c65454"
+                retry: "${http.default_retry}"
+            - logSavedCallback:
+                try:
+                  steps:
+                  - logSavedCallback_call:
+                      call: "sys.log"
+                      args:
+                        text: "${(\"[logSavedCallback] \" + (\"Saved callback: id=\" + saveCallbackResult_30c65454.body.id))}"
+                      result: "logSavedCallbackResult_e099cd5"
+                retry: "${http.default_retry}"
+            - relay_ingest_tool_call:
+                try:
+                  steps:
+                  - relay_ingest_tool_call_call:
+                      call: "http.post"
+                      args:
+                        url: "${((input.env.BASE_URL + \"/\") + \"events\")}"
+                        body:
+                          sessionId: "${input.env.sessionId}"
+                          projectId: "${input.env.projectId}"
+                          data:
+                            create_time: "${sys.now()}"
+                            callback_id: "${saveCallbackResult_30c65454.body.id}"
+                            content: "${null}"
+                            tool_call: "${input.tool_call}"
+                            cost: "${input.cost}"
+                            background: "${default(map.get(input.env, \"background\"), false)}"
+                            status: "${\"\"}"
+                            error: "${null}"
+                          background: "${default(map.get(input.env, \"background\"), false)}"
+                          type: "${\"message\"}"
+                          source: "${\"workflows.tools.CliTools\"}"
+                        auth:
+                          type: "OIDC"
+                          audience: "${input.env.BASE_URL}"
+                        headers:
+                          x-user-id: "${input.env.userId}"
+                          x-project-id: "${input.env.projectId}"
+                      result: "relay_ingest_tool_callResult_54a167a2"
+                retry: "${http.default_retry}"
+            - logIngest:
+                try:
+                  steps:
+                  - logIngest_call:
+                      call: "sys.log"
+                      args:
+                        text: "${(\"[logIngest] \" + (\"Post event result: \" + json.encode_to_string(relay_ingest_tool_callResult_54a167a2)))}"
+                      result: "logIngestResult_2081cdf7"
+                retry: "${http.default_retry}"
+            - maybeStartProducer:
+                try:
+                  steps:
+                  - maybeStartProducer_call:
+                      call: "http.post"
+                      args:
+                        url: "${((input.env.BASE_URL + \"/\") + \"producer/start\")}"
+                        body:
+                          sessionId: "${input.env.sessionId}"
+                        auth:
+                          type: "OIDC"
+                          audience: "${input.env.BASE_URL}"
+                        headers:
+                          x-user-id: "${input.env.userId}"
+                          x-project-id: "${input.env.projectId}"
+                      result: "maybeStartProducerResult_27b7ab7e"
+                retry: "${http.default_retry}"
+            - awaitCallback:
+                try:
+                  steps:
+                  - awaitCallback_call:
+                      call: "events.await_callback"
+                      args:
+                        callback: "${createCallbackResult_1bffcb86}"
+                        timeout: 3600
+                      result: "awaitCallbackResult_2ca32d82"
+                retry: "${http.default_retry}"
+            - mainTry_updateResult:
+                assign:
+                - mainTryResult_6bfd9f9e:
+                    encoded: "${json.encode_to_string(awaitCallbackResult_2ca32d82.http_request.body)}"
+                    cost: "${0}"
+          except:
+            as: "mainTryError"
+            steps:
+            - ReRaise_error:
+                raise: "${mainTryError}"
+            - mainTry_updateResultError:
+                assign:
+                - mainTryResult_6bfd9f9e: "${null}"
+  - return:
+      return: "${mainTryResult_6bfd9f9e}"
