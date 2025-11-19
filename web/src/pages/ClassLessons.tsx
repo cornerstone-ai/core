@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/public'
 import { setSelectedClassId, useClassesList } from '../features/classes/public'
@@ -7,8 +7,12 @@ import {
   mapTopicInfoToSession,
   type Session,
   useSessionPolling,
+  getWorkflowName,
 } from '@awfl-web/features/sessions/public'
 import { useTopicContextYoj, YojMessageList } from '@awfl-web/features/yoj/public'
+import { PromptInput } from '@awfl-web/components/public'
+import { useWorkflowExec } from '@awfl-web/core/public'
+import { AgentModal, useAgentModalController, useSessionAgentConfig } from '../features/teachers/public'
 
 function formatWhen(iso: string | undefined) {
   if (!iso) return ''
@@ -41,6 +45,19 @@ export function ClassLessonsPage() {
 
   const { idToken, user } = useAuth()
 
+  // Mobile detection for UI tweaks (e.g., hide exec gutter)
+  const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && 'matchMedia' in window ? window.matchMedia('(max-width: 640px)').matches : false)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return
+    const mq = window.matchMedia('(max-width: 640px)')
+    const onChange = () => setIsMobile(mq.matches)
+    mq.addEventListener ? mq.addEventListener('change', onChange) : mq.addListener(onChange)
+    onChange()
+    return () => {
+      mq.removeEventListener ? mq.removeEventListener('change', onChange) : mq.removeListener(onChange)
+    }
+  }, [])
+
   // Load class metadata to show class name in the list title
   const { projects: classes } = useClassesList({ idToken })
   const currentClass = useMemo(() => classes.find(c => c.id === classId), [classes, classId])
@@ -69,6 +86,56 @@ export function ClassLessonsPage() {
     windowSeconds: 3600,
     enabled: !!selectedId,
   })
+
+  // Workflow exec wiring (status/start/stop) for the selected session
+  const { status: wfStatus, running: wfRunning, error: wfError, start: startWf, stop: stopWf } = useWorkflowExec({
+    sessionId: selectedId || undefined,
+    idToken,
+    enabled: !!selectedId,
+  })
+
+  // Keep a ref of the current selected session id to avoid stale captures in handlers
+  const currentSessionIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    currentSessionIdRef.current = selectedId || null
+  }, [selectedId])
+
+  // Wrapper that always injects the latest sessionId when starting a workflow
+  function startWfForCurrentSession(workflowName: string, input?: { query?: string }, opts?: { sessionId?: string }) {
+    const sid = opts?.sessionId ?? currentSessionIdRef.current ?? undefined
+    return startWf(workflowName, { query: input?.query ?? '' }, { ...opts, sessionId: sid })
+  }
+
+  // Compute session-derived workflow name
+  const sessionWorkflowName = getWorkflowName(selectedId || '')
+
+  // Server-backed session agent config (single source of truth for agent + workflow)
+  const agent = useAgentModalController({ idToken, sessionId: selectedId || null, workflowName: sessionWorkflowName || null, enabled: !!selectedId })
+  const agentConfig = useSessionAgentConfig({ idToken, sessionId: selectedId, enabled: !!selectedId })
+
+  // Effective workflow chosen from agent configuration, falling back to session-derived
+  const effectiveWorkflowName = agentConfig.workflowName || sessionWorkflowName || null
+
+  // Assistant label: prefer configured agent name; fallback to "Assistant"
+  const assistantName = (agentConfig.agent?.name?.trim?.() || '').trim() || 'Assistant'
+
+  const [submitting, setSubmitting] = useState(false)
+
+  async function handlePromptSubmit(text: string) {
+    if (!effectiveWorkflowName) return
+    try {
+      setSubmitting(true)
+      await startWfForCurrentSession(effectiveWorkflowName, { query: text })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleStop() {
+    try {
+      await stopWf({ includeDescendants: true, workflow: effectiveWorkflowName || undefined })
+    } catch {}
+  }
 
   // Poll every second while not running; no-op task reloads (we only show messages here)
   useSessionPolling({
@@ -103,14 +170,24 @@ export function ClassLessonsPage() {
           >
             ← Back
           </button>
-          <button
-            type="button"
-            onClick={() => { reload(); reloadYoj(); }}
-            className="btn btn-secondary"
-            style={{ padding: '8px 12px' }}
-          >
-            Refresh
-          </button>
+          <div className="row" style={{ gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => { reload(); reloadYoj(); }}
+              className="btn btn-secondary"
+              style={{ padding: '8px 12px' }}
+            >
+              Refresh
+            </button>
+            <button
+              type="button"
+              onClick={agent.openEdit}
+              className="btn btn-secondary"
+              style={{ padding: '8px 12px' }}
+            >
+              Edit Teacher
+            </button>
+          </div>
         </div>
         <h1 style={{ margin: '4px 0 12px', fontSize: 22 }}>{title}</h1>
         {loading && <div style={{ color: '#6b7280', marginBottom: 12 }}>Loading…</div>}
@@ -124,9 +201,43 @@ export function ClassLessonsPage() {
             {execError}
           </div>
         )}
+        {wfError && (
+          <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginBottom: 12 }}>
+            {wfError}
+          </div>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'stretch' }}>
-          <YojMessageList messages={messages as any} sessionId={selectedId || undefined} idToken={idToken || undefined} />
+          <YojMessageList
+            messages={messages as any}
+            sessionId={selectedId || undefined}
+            idToken={idToken || undefined}
+            assistantName={assistantName}
+            hideExecGutter={isMobile}
+          />
+          <PromptInput
+            placeholder={effectiveWorkflowName ? `Trigger workflow ${effectiveWorkflowName}…` : 'Type a prompt and press Enter…'}
+            status={wfStatus}
+            running={wfRunning}
+            submitting={submitting}
+            onSubmit={handlePromptSubmit}
+            onStop={handleStop}
+            disabled={!selectedId}
+          />
         </div>
+
+        <AgentModal
+          open={agent.open}
+          mode={agent.mode}
+          initial={agent.initial || { name: agentConfig.workflowName || sessionWorkflowName || '', description: '', workflowName: sessionWorkflowName || '', tools: [] }}
+          tools={agent.tools}
+          workflows={agent.workflows}
+          workflowsLoading={agent.workflowsLoading}
+          onClose={() => agent.setOpen(false)}
+          onSave={async (input) => {
+            await agent.onSave(input)
+            await agentConfig.reload()
+          }}
+        />
       </div>
     )
   }

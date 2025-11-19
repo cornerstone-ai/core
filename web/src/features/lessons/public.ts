@@ -2,9 +2,5 @@
 
 export type { Lesson } from './types/lesson'
 
-export { useLessonsList } from './hooks/useLessonsList'
-export { useLatestLesson } from './hooks/useLatestLesson'
-
-export { LessonCard } from './components/LessonCard'
-export { LessonsGrid } from './components/LessonsGrid'
-export { LessonDetail } from './components/LessonDetail'
+// Only export components and hooks that actually exist in this feature.
+export { LessonSidebar } from './components/LessonSidebar'
