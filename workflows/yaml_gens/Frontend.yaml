@@ -6,64 +6,10 @@ main:
       steps:
       - mainTry_initResult:
           assign:
-          - mainTryResult_6fd02763: {}
+          - mainTryResult_60ed3c24: {}
       - mainTry_steps:
           try:
             steps:
-            - statusRunning:
-                try:
-                  steps:
-                  - statusRunning_call:
-                      call: "http.post"
-                      args:
-                        url: "${((input.env.BASE_URL + \"/\") + \"workflows/exec/status/update\")}"
-                        body:
-                          execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
-                          status: "${\"Running\"}"
-                          ended: "${false}"
-                          workflow: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
-                          updated: "${sys.now()}"
-                          error: "${null}"
-                        auth:
-                          type: "OIDC"
-                          audience: "${input.env.BASE_URL}"
-                        headers:
-                          x-user-id: "${input.env.userId}"
-                          x-project-id: "${input.env.projectId}"
-                      result: "statusRunningResult_2ce0001c"
-                retry: "${http.default_retry}"
-            - enqueueStatusRunning_enqueue_block:
-                steps:
-                - relay_ingest_tool_call:
-                    try:
-                      steps:
-                      - relay_ingest_tool_call_call:
-                          call: "http.post"
-                          args:
-                            url: "${((input.env.BASE_URL + \"/\") + \"events\")}"
-                            body:
-                              sessionId: "${input.env.sessionId}"
-                              projectId: "${input.env.projectId}"
-                              data:
-                                create_time: "${sys.now()}"
-                                callback_id: "${null}"
-                                content: "${null}"
-                                tool_call: "${null}"
-                                cost: "${0.0}"
-                                background: "${default(map.get(input.env, \"background\"), false)}"
-                                status: "${\"Running\"}"
-                                error: "${null}"
-                              background: "${default(map.get(input.env, \"background\"), false)}"
-                              type: "${\"message\"}"
-                              source: "${\"workflows.tools.CliTools\"}"
-                            auth:
-                              type: "OIDC"
-                              audience: "${input.env.BASE_URL}"
-                            headers:
-                              x-user-id: "${input.env.userId}"
-                              x-project-id: "${input.env.projectId}"
-                          result: "relay_ingest_tool_callResult_40938653"
-                    retry: "${http.default_retry}"
             - registerExecForSessionTry:
                 steps:
                 - registerExecForSessionTry_initResult:
@@ -247,6 +193,86 @@ main:
                       - registerWorkflowExecLink_updateResult_1:
                           assign:
                           - registerWorkflowExecLinkResult_32b10be6: "${\"skip\"}"
+            - tryInitStatus:
+                steps:
+                - tryInitStatus_initResult:
+                    assign:
+                    - tryInitStatusResult_2792e570: {}
+                - tryInitStatus_steps:
+                    try:
+                      steps:
+                      - statusRunning:
+                          try:
+                            steps:
+                            - statusRunning_call:
+                                call: "http.post"
+                                args:
+                                  url: "${((input.env.BASE_URL + \"/\") + \"workflows/exec/status/update\")}"
+                                  body:
+                                    execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                    status: "${\"Running\"}"
+                                    ended: "${false}"
+                                    workflow: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
+                                    updated: "${sys.now()}"
+                                    error: "${null}"
+                                  auth:
+                                    type: "OIDC"
+                                    audience: "${input.env.BASE_URL}"
+                                  headers:
+                                    x-user-id: "${input.env.userId}"
+                                    x-project-id: "${input.env.projectId}"
+                                result: "statusRunningResult_2ce0001c"
+                          retry: "${http.default_retry}"
+                      - enqueueStatusRunning_enqueue_block:
+                          steps:
+                          - relay_ingest_tool_call:
+                              try:
+                                steps:
+                                - relay_ingest_tool_call_call:
+                                    call: "http.post"
+                                    args:
+                                      url: "${((input.env.BASE_URL + \"/\") + \"events\")}"
+                                      body:
+                                        sessionId: "${input.env.sessionId}"
+                                        projectId: "${input.env.projectId}"
+                                        data:
+                                          create_time: "${sys.now()}"
+                                          callback_id: "${null}"
+                                          content: "${null}"
+                                          tool_call: "${null}"
+                                          cost: "${0.0}"
+                                          background: "${default(map.get(input.env, \"background\"), false)}"
+                                          status: "${\"Running\"}"
+                                          error: "${null}"
+                                        background: "${default(map.get(input.env, \"background\"), false)}"
+                                        type: "${\"message\"}"
+                                        source: "${\"workflows.tools.CliTools\"}"
+                                      auth:
+                                        type: "OIDC"
+                                        audience: "${input.env.BASE_URL}"
+                                      headers:
+                                        x-user-id: "${input.env.userId}"
+                                        x-project-id: "${input.env.projectId}"
+                                    result: "relay_ingest_tool_callResult_40938653"
+                              retry: "${http.default_retry}"
+                      - tryInitStatus_updateResult:
+                          assign:
+                          - tryInitStatusResult_2792e570: "${null}"
+                    except:
+                      as: "tryInitStatusError"
+                      steps:
+                      - tryInitStatus_logError:
+                          try:
+                            steps:
+                            - tryInitStatus_logError_call:
+                                call: "sys.log"
+                                args:
+                                  text: "${(\"[tryInitStatus_logError] \" + tryInitStatusError.message)}"
+                                result: "tryInitStatus_logErrorResult_274f74a5"
+                          retry: "${http.default_retry}"
+                      - tryInitStatus_updateResultError:
+                          assign:
+                          - tryInitStatusResult_2792e570: "${null}"
             - maybeSaveInputTask:
                 steps:
                 - maybeSaveInputTask_switch:
@@ -447,7 +473,7 @@ main:
                 steps:
                 - maybeRespond_initResult:
                     assign:
-                    - maybeRespondResult_6a48a866: {}
+                    - maybeRespondResult_4e738f65: {}
                 - maybeRespond_steps:
                     switch:
                     - condition: "${acquireResponseLock_tryResult_a6f4e78}"
@@ -1150,7 +1176,7 @@ main:
                           steps:
                           - maybeToolFeedback_initResult:
                               assign:
-                              - maybeToolFeedbackResult_1423b0b3: {}
+                              - maybeToolFeedbackResult_4a88dbe8: {}
                           - maybeToolFeedback_steps:
                               switch:
                               - condition: "${(len(processToolCallsResult_5f59f727.results) > 0)}"
@@ -1164,7 +1190,8 @@ main:
                                             workflow_id: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
                                             argument:
                                               query: "${\"Tool calls completed\"}"
-                                              fund: "${(input.fund - (complete_switchResult_45d82fb5.total_cost + toolsCostResult_2177477))}"
+                                              fund: "${input.fund}"
+                                              spent: "${default((default(map.get(input, \"spent\"), 0) + (complete_switchResult_45d82fb5.total_cost + toolsCostResult_2177477)), null)}"
                                               task: "${null}"
                                               env:
                                                 userId: "${input.env.userId}"
@@ -1177,17 +1204,71 @@ main:
                                             location: "${sys.get_env(\"GOOGLE_CLOUD_LOCATION\")}"
                                             project_id: "${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}"
                                             connector_params:
-                                              skip_polling: false
-                                          result: "toolCallsCompletedResult_c509f1e"
+                                              skip_polling: true
+                                          result: "toolCallsCompletedResult_1ddcb3a1"
                                     retry: "${http.default_retry}"
                                 - maybeToolFeedback_updateResult_0:
                                     assign:
-                                    - maybeToolFeedbackResult_1423b0b3: "${toolCallsCompletedResult_c509f1e}"
+                                    - maybeToolFeedbackResult_4a88dbe8: "${toolCallsCompletedResult_1ddcb3a1}"
                               - condition: "${true}"
                                 steps:
+                                - statusDone:
+                                    try:
+                                      steps:
+                                      - statusDone_call:
+                                          call: "http.post"
+                                          args:
+                                            url: "${((input.env.BASE_URL + \"/\") + \"workflows/exec/status/update\")}"
+                                            body:
+                                              execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+                                              status: "${\"Done\"}"
+                                              ended: "${true}"
+                                              workflow: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
+                                              updated: "${sys.now()}"
+                                              error: "${null}"
+                                            auth:
+                                              type: "OIDC"
+                                              audience: "${input.env.BASE_URL}"
+                                            headers:
+                                              x-user-id: "${input.env.userId}"
+                                              x-project-id: "${input.env.projectId}"
+                                          result: "statusDoneResult_5e4d68b"
+                                    retry: "${http.default_retry}"
+                                - enqueueStatusDone_enqueue_block:
+                                    steps:
+                                    - relay_ingest_tool_call_2:
+                                        try:
+                                          steps:
+                                          - relay_ingest_tool_call_call_2:
+                                              call: "http.post"
+                                              args:
+                                                url: "${((input.env.BASE_URL + \"/\") + \"events\")}"
+                                                body:
+                                                  sessionId: "${input.env.sessionId}"
+                                                  projectId: "${input.env.projectId}"
+                                                  data:
+                                                    create_time: "${sys.now()}"
+                                                    callback_id: "${null}"
+                                                    content: "${null}"
+                                                    tool_call: "${null}"
+                                                    cost: "${0.0}"
+                                                    background: "${default(map.get(input.env, \"background\"), false)}"
+                                                    status: "${\"Done\"}"
+                                                    error: "${null}"
+                                                  background: "${default(map.get(input.env, \"background\"), false)}"
+                                                  type: "${\"message\"}"
+                                                  source: "${\"workflows.tools.CliTools\"}"
+                                                auth:
+                                                  type: "OIDC"
+                                                  audience: "${input.env.BASE_URL}"
+                                                headers:
+                                                  x-user-id: "${input.env.userId}"
+                                                  x-project-id: "${input.env.projectId}"
+                                              result: "relay_ingest_tool_callResult_6afa578b"
+                                        retry: "${http.default_retry}"
                                 - maybeToolFeedback_updateResult_1:
                                     assign:
-                                    - maybeToolFeedbackResult_1423b0b3: "${complete_switchResult_45d82fb5}"
+                                    - maybeToolFeedbackResult_4a88dbe8: "${complete_switchResult_45d82fb5}"
                       - runSummaries:
                           try:
                             steps:
@@ -1335,69 +1416,15 @@ main:
                                     - collapseMessages_tryResult_2ee71180: "${null}"
                       - maybeRespond_updateResult_0:
                           assign:
-                          - maybeRespondResult_6a48a866: "${maybeToolFeedbackResult_1423b0b3}"
+                          - maybeRespondResult_4e738f65: "${maybeToolFeedbackResult_4a88dbe8}"
                     - condition: "${true}"
                       steps:
                       - maybeRespond_updateResult_1:
                           assign:
-                          - maybeRespondResult_6a48a866: "${null}"
-            - statusDone:
-                try:
-                  steps:
-                  - statusDone_call:
-                      call: "http.post"
-                      args:
-                        url: "${((input.env.BASE_URL + \"/\") + \"workflows/exec/status/update\")}"
-                        body:
-                          execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
-                          status: "${\"Done\"}"
-                          ended: "${true}"
-                          workflow: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
-                          updated: "${sys.now()}"
-                          error: "${null}"
-                        auth:
-                          type: "OIDC"
-                          audience: "${input.env.BASE_URL}"
-                        headers:
-                          x-user-id: "${input.env.userId}"
-                          x-project-id: "${input.env.projectId}"
-                      result: "statusDoneResult_5e4d68b"
-                retry: "${http.default_retry}"
-            - enqueueStatusDone_enqueue_block:
-                steps:
-                - relay_ingest_tool_call_2:
-                    try:
-                      steps:
-                      - relay_ingest_tool_call_call_2:
-                          call: "http.post"
-                          args:
-                            url: "${((input.env.BASE_URL + \"/\") + \"events\")}"
-                            body:
-                              sessionId: "${input.env.sessionId}"
-                              projectId: "${input.env.projectId}"
-                              data:
-                                create_time: "${sys.now()}"
-                                callback_id: "${null}"
-                                content: "${null}"
-                                tool_call: "${null}"
-                                cost: "${0.0}"
-                                background: "${default(map.get(input.env, \"background\"), false)}"
-                                status: "${\"Done\"}"
-                                error: "${null}"
-                              background: "${default(map.get(input.env, \"background\"), false)}"
-                              type: "${\"message\"}"
-                              source: "${\"workflows.tools.CliTools\"}"
-                            auth:
-                              type: "OIDC"
-                              audience: "${input.env.BASE_URL}"
-                            headers:
-                              x-user-id: "${input.env.userId}"
-                              x-project-id: "${input.env.projectId}"
-                          result: "relay_ingest_tool_callResult_6afa578b"
-                    retry: "${http.default_retry}"
+                          - maybeRespondResult_4e738f65: "${null}"
             - mainTry_updateResult:
                 assign:
-                - mainTryResult_6fd02763: "${maybeRespondResult_6a48a866}"
+                - mainTryResult_60ed3c24: "${maybeRespondResult_4e738f65}"
           except:
             as: "mainTryError"
             steps:
@@ -1479,6 +1506,6 @@ main:
                 raise: "${mainTryError}"
             - mainTry_updateResultError:
                 assign:
-                - mainTryResult_6fd02763: "${null}"
+                - mainTryResult_60ed3c24: "${null}"
   - return:
-      return: "${mainTryResult_6fd02763}"
+      return: "${mainTryResult_60ed3c24}"

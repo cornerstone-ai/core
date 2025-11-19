@@ -82,6 +82,9 @@ img, svg, video, canvas { max-width: 100%; height: auto; }
 .nav { justify-self: center; display: inline-flex; gap: 8px; }
 .tools { justify-self: end; display: inline-flex; gap: 8px; }
 
+/* Icon button (for hamburger, close, etc.) */
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0 !important; border-radius: 8px; }
+
 /* Responsive header behavior */
 .app-hamburger { display: none; }
 @media (max-width: 767px) {
@@ -89,7 +92,12 @@ img, svg, video, canvas { max-width: 100%; height: auto; }
   .app-nav-left { display: none !important; }
   /* Hide brand title on mobile */
   .brand { display: none !important; }
+  /* Switch header layout to flex and push tools to the right */
+  .header-inner { display: flex; align-items: center; gap: 8px; }
+  .tools { margin-left: auto; }
 }
+/* Ensure hamburger has tight chrome even if inline styles exist */
+.app-hamburger { padding: 0 !important; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
 
 /* Main: do not pad or scroll by default; defer to inner wrappers */
 .main {
@@ -282,4 +290,28 @@ input[type='file'] { font-family: inherit; }
   /* Code and meta */
   --yoj-code-bg: #f7f7fb;
   --yoj-meta: var(--muted);
+
+  /* Collapsed group defaults */
+  --yoj-cg-bg: color-mix(in srgb, var(--bg) 86%, #ffffff 14%);
+  --yoj-cg-border: var(--subtle);
+  --yoj-cg-radius: 12px;
+  --yoj-cg-padding: 8px;
+  --yoj-cg-label-color: color-mix(in srgb, var(--accent) 60%, var(--fg));
+  --yoj-cg-desc-color: var(--muted);
+
+  --yoj-cg-toggle-border: var(--subtle);
+  --yoj-cg-toggle-color: var(--fg);
+  --yoj-cg-toggle-bg: #fff;
+  --yoj-cg-toggle-bg-hover: color-mix(in srgb, var(--bg) 86%, #ffffff 14%);
+  --yoj-cg-toggle-bg-expanded: color-mix(in srgb, var(--accent) 12%, #ffffff 88%);
+  --yoj-cg-toggle-bg-expanded-hover: color-mix(in srgb, var(--accent) 18%, #ffffff 82%);
+
+  --yoj-cg-body-bg: #fff;
+  --yoj-cg-body-border: var(--subtle);
+  --yoj-cg-body-radius: 10px;
+  --yoj-cg-body-padding: 10px;
+
+  --yoj-cg-toast-bg: #111827;
+  --yoj-cg-toast-color: #f9fafb;
+  --yoj-cg-toast-border: rgba(255,255,255,0.12);
 }

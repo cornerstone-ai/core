@@ -6,7 +6,7 @@ main:
       steps:
       - mainTry_initResult:
           assign:
-          - mainTryResult_1af4145b: {}
+          - mainTryResult_3581c2ab: {}
       - mainTry_steps:
           try:
             steps:
@@ -473,7 +473,7 @@ main:
                 steps:
                 - maybeRespond_initResult:
                     assign:
-                    - maybeRespondResult_36c313a7: {}
+                    - maybeRespondResult_46888ad9: {}
                 - maybeRespond_steps:
                     switch:
                     - condition: "${acquireResponseLock_tryResult_a6f4e78}"
@@ -1176,7 +1176,7 @@ main:
                           steps:
                           - maybeToolFeedback_initResult:
                               assign:
-                              - maybeToolFeedbackResult_7aa51cbc: {}
+                              - maybeToolFeedbackResult_498e962a: {}
                           - maybeToolFeedback_steps:
                               switch:
                               - condition: "${(len(processToolCallsResult_117c96ea.results) > 0)}"
@@ -1190,7 +1190,8 @@ main:
                                             workflow_id: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_ID\")}"
                                             argument:
                                               query: "${\"Tool calls completed\"}"
-                                              fund: "${(input.fund - (complete_switchResult_57b5bf91.total_cost + toolsCostResult_1ba51f57))}"
+                                              fund: "${input.fund}"
+                                              spent: "${default((default(map.get(input, \"spent\"), 0) + (complete_switchResult_57b5bf91.total_cost + toolsCostResult_1ba51f57)), null)}"
                                               task: "${null}"
                                               env:
                                                 userId: "${input.env.userId}"
@@ -1204,11 +1205,11 @@ main:
                                             project_id: "${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}"
                                             connector_params:
                                               skip_polling: true
-                                          result: "toolCallsCompletedResult_4bf9e0f8"
+                                          result: "toolCallsCompletedResult_18f9434c"
                                     retry: "${http.default_retry}"
                                 - maybeToolFeedback_updateResult_0:
                                     assign:
-                                    - maybeToolFeedbackResult_7aa51cbc: "${toolCallsCompletedResult_4bf9e0f8}"
+                                    - maybeToolFeedbackResult_498e962a: "${toolCallsCompletedResult_18f9434c}"
                               - condition: "${true}"
                                 steps:
                                 - statusDone:
@@ -1267,7 +1268,7 @@ main:
                                         retry: "${http.default_retry}"
                                 - maybeToolFeedback_updateResult_1:
                                     assign:
-                                    - maybeToolFeedbackResult_7aa51cbc: "${complete_switchResult_57b5bf91}"
+                                    - maybeToolFeedbackResult_498e962a: "${complete_switchResult_57b5bf91}"
                       - runSummaries:
                           try:
                             steps:
@@ -1415,15 +1416,15 @@ main:
                                     - collapseMessages_tryResult_2ee71180: "${null}"
                       - maybeRespond_updateResult_0:
                           assign:
-                          - maybeRespondResult_36c313a7: "${maybeToolFeedbackResult_7aa51cbc}"
+                          - maybeRespondResult_46888ad9: "${maybeToolFeedbackResult_498e962a}"
                     - condition: "${true}"
                       steps:
                       - maybeRespond_updateResult_1:
                           assign:
-                          - maybeRespondResult_36c313a7: "${null}"
+                          - maybeRespondResult_46888ad9: "${null}"
             - mainTry_updateResult:
                 assign:
-                - mainTryResult_1af4145b: "${maybeRespondResult_36c313a7}"
+                - mainTryResult_3581c2ab: "${maybeRespondResult_46888ad9}"
           except:
             as: "mainTryError"
             steps:
@@ -1505,6 +1506,6 @@ main:
                 raise: "${mainTryError}"
             - mainTry_updateResultError:
                 assign:
-                - mainTryResult_1af4145b: "${null}"
+                - mainTryResult_3581c2ab: "${null}"
   - return:
-      return: "${mainTryResult_1af4145b}"
+      return: "${mainTryResult_3581c2ab}"

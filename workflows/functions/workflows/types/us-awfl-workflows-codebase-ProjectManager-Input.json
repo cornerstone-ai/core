@@ -4,14 +4,14 @@
   "schema" : {
     "type" : "object",
     "properties" : {
+      "task" : {
+        "type" : "string"
+      },
       "query" : {
         "type" : "string"
       },
       "fund" : {
         "type" : "integer"
-      },
-      "task" : {
-        "type" : "string"
       },
       "env" : {
         "type" : "object",
@@ -48,11 +48,15 @@
           "sessionId"
         ],
         "additionalProperties" : true
+      },
+      "spent" : {
+        "type" : "integer"
       }
     },
     "required" : [
       "query",
       "fund",
+      "spent",
       "task",
       "env"
     ],
