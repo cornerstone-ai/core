@@ -7,6 +7,7 @@ import { ThemeProvider, ThemeSelector, Motifs } from '../features/themes/public'
 import { MusicToggle } from '../features/music/public'
 import { ClassSelector } from '../features/classes/ClassSelector'
 import { ClassesPage } from '../pages/Classes'
+import { ClassLessonsPage } from '../pages/ClassLessons'
 import { useAuth } from '../features/auth/public'
 
 function HeaderBar() {
@@ -153,6 +154,8 @@ export function App() {
               <Route path="/" element={<CornerstoneList />} />
               <Route path="/new" element={<CornerstoneNew />} />
               <Route path="/classes" element={<ClassesPage />} />
+              <Route path="/classes/:classId/lessons" element={<ClassLessonsPage />} />
+              <Route path="/classes/:classId/lessons/:sessionId" element={<ClassLessonsPage />} />
               <Route path="/:docId" element={<CornerstoneDetail />} />
               <Route path="*" element={<div>Not Found</div>} />
             </Routes>
