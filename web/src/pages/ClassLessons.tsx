@@ -11,7 +11,7 @@ import {
 } from '@awfl-web/features/sessions/public'
 import { useTopicContextYoj, YojMessageList } from '@awfl-web/features/yoj/public'
 import { PromptInput } from '@awfl-web/components/public'
-import { useWorkflowExec } from '@awfl-web/core/public'
+import { useWorkflowExec, useScrollHome } from '@awfl-web/core/public'
 import { AgentModal, useAgentModalController, useSessionAgentConfig } from '../features/teachers/public'
 
 function formatWhen(iso: string | undefined) {
@@ -149,95 +149,124 @@ export function ClassLessonsPage() {
     intervalMs: 1000,
   })
 
+  // Autoscroll management: messages area is the scroll container, anchored to bottom
+  const messagesRef = useRef<HTMLDivElement | null>(null)
+  const homeAnchorRef = useRef<HTMLDivElement | null>(null)
+  useScrollHome({
+    containerRef: messagesRef,
+    anchorRef: homeAnchorRef,
+    itemCount: (messages || []).length,
+    home: 'bottom',
+    enabled: !!selectedId,
+    key: selectedId || undefined,
+  })
+
   if (selectedId) {
     const selected = lessons.find(s => s.id === selectedId)
     const title = selected ? (selected.title && selected.title.trim().length > 0 ? selected.title : selected.id) : selectedId
     return (
-      <div className="pearl-frame" style={{ padding: 16 }}>
-        <div className="pearl-stickers" aria-hidden="true">
-          <span className="s1">✨</span>
-          <span className="s2">🪼</span>
-          <span className="s3">🧁</span>
-          <span className="s4">🐇</span>
-        </div>
-        <div className="row" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => navigate(`/classes/${encodeURIComponent(classId)}/lessons`)}
-            aria-label="Back to lessons"
-            style={{ padding: '8px 12px' }}
-          >
-            ← Back
-          </button>
-          <div className="row" style={{ gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => { reload(); reloadYoj(); }}
-              className="btn btn-secondary"
-              style={{ padding: '8px 12px' }}
-            >
-              Refresh
-            </button>
-            <button
-              type="button"
-              onClick={agent.openEdit}
-              className="btn btn-secondary"
-              style={{ padding: '8px 12px' }}
-            >
-              Edit Teacher
-            </button>
+      <div className="lesson-root">
+        <div
+          className="pearl-frame"
+          /* Ensure the frame itself provides a flex column that contains its own overflow */
+          style={{ padding: 12, display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0, overflow: 'hidden' }}
+        >
+          <div className="pearl-stickers" aria-hidden="true">
+            <span className="s1">✨</span>
+            <span className="s2">🪼</span>
+            <span className="s3">🧁</span>
+            <span className="s4">🐇</span>
           </div>
-        </div>
-        <h1 style={{ margin: '4px 0 12px', fontSize: 22 }}>{title}</h1>
-        {loading && <div style={{ color: '#6b7280', marginBottom: 12 }}>Loading…</div>}
-        {error && (
-          <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginBottom: 12 }}>
-            {error}
-          </div>
-        )}
-        {execError && (
-          <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginBottom: 12 }}>
-            {execError}
-          </div>
-        )}
-        {wfError && (
-          <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginBottom: 12 }}>
-            {wfError}
-          </div>
-        )}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'stretch' }}>
-          <YojMessageList
-            messages={messages as any}
-            sessionId={selectedId || undefined}
-            idToken={idToken || undefined}
-            assistantName={assistantName}
-            hideExecGutter={isMobile}
-          />
-          <PromptInput
-            placeholder={effectiveWorkflowName ? `Trigger workflow ${effectiveWorkflowName}…` : 'Type a prompt and press Enter…'}
-            status={wfStatus}
-            running={wfRunning}
-            submitting={submitting}
-            onSubmit={handlePromptSubmit}
-            onStop={handleStop}
-            disabled={!selectedId}
-          />
-        </div>
 
-        <AgentModal
-          open={agent.open}
-          mode={agent.mode}
-          initial={agent.initial || { name: agentConfig.workflowName || sessionWorkflowName || '', description: '', workflowName: sessionWorkflowName || '', tools: [] }}
-          tools={agent.tools}
-          workflows={agent.workflows}
-          workflowsLoading={agent.workflowsLoading}
-          onClose={() => agent.setOpen(false)}
-          onSave={async (input) => {
-            await agent.onSave(input)
-            await agentConfig.reload()
-          }}
-        />
+          <div className="lesson-layout">
+            {/* Header (sticks visually because only the middle scrolls) */}
+            <div className="lesson-header">
+              <div className="row" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => navigate(`/classes/${encodeURIComponent(classId)}/lessons`)}
+                  aria-label="Back to lessons"
+                >
+                  ← Back
+                </button>
+                <div className="row" style={{ gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => { reload(); reloadYoj(); }}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Refresh
+                  </button>
+                  <button
+                    type="button"
+                    onClick={agent.openEdit}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Edit Teacher
+                  </button>
+                </div>
+              </div>
+              <h1 style={{ margin: '2px 0 0', fontSize: 20 }}>{title}</h1>
+              {loading && <div style={{ color: '#6b7280', marginTop: 4 }}>Loading…</div>}
+              {error && (
+                <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
+                  {error}
+                </div>
+              )}
+              {execError && (
+                <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
+                  {execError}
+                </div>
+              )}
+              {wfError && (
+                <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
+                  {wfError}
+                </div>
+              )}
+            </div>
+
+            {/* Scrollable messages area */}
+            <div ref={messagesRef} className="lesson-messages">
+              <YojMessageList
+                messages={messages as any}
+                sessionId={selectedId || undefined}
+                idToken={idToken || undefined}
+                assistantName={assistantName}
+                hideExecGutter={isMobile}
+              />
+              {/* Bottom anchor for reliable scrollIntoView */}
+              <div ref={homeAnchorRef} aria-hidden="true" />
+            </div>
+
+            {/* Footer (submit) */}
+            <div className="lesson-footer">
+              <PromptInput
+                placeholder={effectiveWorkflowName ? `Trigger workflow ${effectiveWorkflowName}…` : 'Type a prompt and press Enter…'}
+                status={wfStatus}
+                running={wfRunning}
+                submitting={submitting}
+                onSubmit={handlePromptSubmit}
+                onStop={handleStop}
+                disabled={!selectedId}
+              />
+            </div>
+          </div>
+
+          <AgentModal
+            open={agent.open}
+            mode={agent.mode}
+            initial={agent.initial || { name: agentConfig.workflowName || sessionWorkflowName || '', description: '', workflowName: sessionWorkflowName || '', tools: [] }}
+            tools={agent.tools}
+            workflows={agent.workflows}
+            workflowsLoading={agent.workflowsLoading}
+            onClose={() => agent.setOpen(false)}
+            onSave={async (input) => {
+              await agent.onSave(input)
+              await agentConfig.reload()
+            }}
+          />
+        </div>
       </div>
     )
   }
@@ -249,17 +278,16 @@ export function ClassLessonsPage() {
         <div className="row" style={{ alignItems: 'center', gap: 8 }}>
           <button
             type="button"
-            className="btn btn-secondary"
+            className="btn btn-secondary btn-sm"
             onClick={() => navigate('/classes')}
             aria-label="Back to classes"
-            style={{ padding: '8px 12px' }}
           >
             ← Classes
           </button>
           <h1 style={{ margin: 0, fontSize: 22 }}>{className} Lessons</h1>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={reload} className="btn btn-secondary" style={{ padding: '8px 12px' }}>Refresh</button>
+          <button onClick={reload} className="btn btn-secondary btn-sm">Refresh</button>
         </div>
       </div>
 

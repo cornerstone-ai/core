@@ -43,9 +43,10 @@ body {
 
 /* App shell */
 .app-shell {
-  min-height: 100%;
+  height: 100svh; /* lock shell to the viewport so inner panels own scrolling (iOS safe viewport) */
   display: grid;
   grid-template-rows: auto 1fr;
+  overflow: hidden; /* app shell itself doesn't scroll */
 }
 .header {
   position: sticky;
@@ -58,7 +59,7 @@ body {
 .header-inner {
   max-width: 1280px; /* expanded container width */
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: 8px 12px; /* tighter header */
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -80,9 +81,15 @@ body {
 .main {
   max-width: 1280px; /* expanded container width */
   margin: 0 auto;
-  padding: 24px 16px 40px;
+  padding: 8px 12px 12px; /* tighter vertical padding to give more space to content */
   position: relative; /* establish containing block */
   z-index: 0; /* create stacking context so negative z children stay behind content, not the whole page */
+  /* Fill the grid row */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* Allow content pages (like lists) to scroll by default */
+  overflow: auto;
 }
 
 /* Pearl-bordered content frame */
@@ -90,7 +97,7 @@ body {
   position: relative;
   background: var(--card);
   border-radius: calc(var(--radius) + 8px);
-  padding: 18px;
+  padding: 12px; /* tighter inner padding */
   box-shadow: var(--shadow-sm);
   /* Inner content box */
 }
@@ -215,6 +222,9 @@ button, .btn {
   color: var(--fg);
   border: 1px solid var(--subtle);
 }
+/* Compact button size to save vertical space */
+.btn-sm { padding: 4px 8px !important; font-size: 13px; line-height: 1.1; }
+
 button:disabled { opacity: .6; cursor: not-allowed; }
 button:focus-visible { outline: none; box-shadow: var(--focus); }
 button:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
@@ -231,3 +241,54 @@ input[type='file'] { font-family: inherit; }
 
 /* Variants flag helper */
 .variant-badge { font-size: 11px; color: var(--muted); }
+
+/* --------- Lesson detail layout utilities --------- */
+/* Root within the main area that should take all available height */
+.lesson-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0; /* allow children to define scroll containers */
+  /* prevent the main from scrolling in detail view so only messages scroll */
+  overflow: hidden;
+}
+/* Make the frame itself a flex column and contain overflow */
+.lesson-root .pearl-frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden; /* prevent page scroll; messages will scroll */
+}
+
+.lesson-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* tighter */
+  flex: 1 1 auto;
+  min-height: 0; /* ensure the middle section can shrink */
+}
+.lesson-header {
+  /* keep visual separation */
+  padding-bottom: 4px; /* tighter */
+  border-bottom: 1px solid var(--subtle);
+  background: var(--card);
+  z-index: 1;
+}
+.lesson-messages {
+  flex: 1 1 auto;
+  min-height: 0; /* allow flex child to shrink and create an inner scroll area */
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 0; /* maximize message area */
+}
+.lesson-footer {
+  padding-top: 4px; /* tighter */
+  /* remove border-top to avoid double HR when PromptInput renders its own separator */
+  border-top: 0;
+  background: var(--card);
+  z-index: 1;
+}
+@media (max-width: 640px) {
+  .lesson-layout { }
+}
