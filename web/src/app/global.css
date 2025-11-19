@@ -73,6 +73,8 @@ body {
 @media (max-width: 767px) {
   .app-hamburger { display: inline-flex; }
   .app-nav-left { display: none !important; }
+  /* Hide brand title on mobile */
+  .brand { display: none !important; }
 }
 
 .main {
