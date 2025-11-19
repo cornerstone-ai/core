@@ -40,7 +40,7 @@ export function ClassesPage() {
   }
 
   return (
-    <div style={{ padding: 16 }}>
+    <div className="page-scroll">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <h1 style={{ margin: 0, fontSize: 22 }}>Classes</h1>
         <div style={{ display: 'flex', gap: 8 }}>

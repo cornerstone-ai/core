@@ -17,6 +17,9 @@
   --focus: 0 0 0 3px rgba(236, 72, 153, 0.35);
 }
 
+/* Global box-sizing to prevent padding from causing overflow */
+*, *::before, *::after { box-sizing: border-box; }
+
 /* Theme variants (pastel backgrounds + accents) */
 :root[data-theme='pink']  { --bg: #fff7fb; --accent: #ec4899; --accent-dark: #b72873; --focus: 0 0 0 3px rgba(236,72,153,.35); }
 :root[data-theme='blue']  { --bg: #f6f9ff; --accent: #3b82f6; --accent-dark: #2967c9; --focus: 0 0 0 3px rgba(59,130,246,.30); }
@@ -38,15 +41,25 @@ body {
   background: var(--bg);
 }
 
+/* Make media not cause overflow */
+img, svg, video, canvas { max-width: 100%; height: auto; }
+
 /* Screen-reader only utility */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
-/* App shell */
+/* App shell: header + content; content owns scroll unless overridden */
 .app-shell {
-  height: 100svh; /* lock shell to the viewport so inner panels own scrolling (iOS safe viewport) */
   display: grid;
-  grid-template-rows: auto 1fr;
-  overflow: hidden; /* app shell itself doesn't scroll */
+  grid-template-rows: auto 1fr; /* header + content */
+  height: 100%;
+  min-height: 100svh; /* avoids iOS 100vh visual overflow */
+  overflow: hidden; /* body never scrolls */
+}
+@supports (height: 100dvh) {
+  .app-shell { min-height: 100dvh; }
+}
+@supports not (height: 100svh) {
+  .app-shell { min-height: 100vh; }
 }
 .header {
   position: sticky;
@@ -78,18 +91,42 @@ body {
   .brand { display: none !important; }
 }
 
+/* Main: do not pad or scroll by default; defer to inner wrappers */
 .main {
-  max-width: 1280px; /* expanded container width */
-  margin: 0 auto;
-  padding: 8px 12px 12px; /* tighter vertical padding to give more space to content */
-  position: relative; /* establish containing block */
-  z-index: 0; /* create stacking context so negative z children stay behind content, not the whole page */
-  /* Fill the grid row */
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 0;
+  padding: 0; /* move padding to inner scrollers to avoid phantom page scroll */
+  position: relative;
+  z-index: 0;
   display: flex;
   flex-direction: column;
-  /* Allow content pages (like lists) to scroll by default */
+  overflow: hidden; /* never scroll the main directly */
+  contain: paint; /* clamp absolutely positioned backgrounds */
+}
+/* Inner scroller wrapper for list-like pages */
+.page-scroll {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
+  padding: 8px 12px 12px; /* only the inner wrapper has padding */
+}
+/* Back-compat: generic container without scroll behavior */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Pearl-bordered content frame */
@@ -99,7 +136,8 @@ body {
   border-radius: calc(var(--radius) + 8px);
   padding: 12px; /* tighter inner padding */
   box-shadow: var(--shadow-sm);
-  /* Inner content box */
+  /* prevent pseudo ring from causing page scroll */
+  overflow: hidden;
 }
 .pearl-frame::before {
   content: "";
@@ -117,33 +155,21 @@ body {
 }
 
 /* Small themed stickers around the frame (emojis as placeholders) */
-.pearl-stickers {
-  pointer-events: none;
-  position: absolute;
-  inset: -14px;
-}
-.pearl-stickers span {
-  position: absolute;
-  font-size: 14px;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,.15));
-}
+.pearl-stickers { pointer-events: none; position: absolute; inset: -14px; }
+.pearl-stickers span { position: absolute; font-size: 14px; filter: drop-shadow(0 1px 1px rgba(0,0,0,.15)); }
 /* positions */
 .pearl-stickers .s1 { top: -6px; left: 20px; }
 .pearl-stickers .s2 { top: 10px; right: -6px; }
 .pearl-stickers .s3 { bottom: -8px; left: 12px; }
 .pearl-stickers .s4 { bottom: 8px; right: 22px; }
 
-/* Background floating motifs per theme */
+/* Background floating motifs per theme (kept inside main; never affects layout) */
 .motifs {
   position: absolute;
-  /* widen horizontally around content; keep slight vertical inset to avoid page scroll */
-  left: -28px;
-  right: -28px;
-  top: 12px;
-  bottom: 12px;
-  overflow: visible;
-  z-index: -1; /* ensure behind page content */
-  pointer-events: none; /* never block clicks */
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
 }
 .motif { position: absolute; opacity: .35; font-size: 18px; pointer-events: none; }
 @keyframes floatUp { from { transform: translateY(6px); } to { transform: translateY(-6px); } }
@@ -151,52 +177,19 @@ body {
   .motif { animation: floatUp 6s ease-in-out infinite alternate; will-change: transform; }
 }
 
-.card {
-  background: var(--card);
-  border: 1px solid var(--subtle);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: var(--shadow-sm);
-}
+.card { background: var(--card); border: 1px solid var(--subtle); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-sm); }
 
 /* Card grid for classes/projects */
-.grid-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
-}
-.card-tile {
-  background: var(--card);
-  border: 1px solid var(--subtle);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
-}
-.card-tile:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--subtle));
-}
-.card-tile:focus-visible {
-  outline: none;
-  box-shadow: var(--focus);
-}
+.grid-cards { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.card-tile { background: var(--card); border: 1px solid var(--subtle); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-sm); transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease; }
+.card-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: color-mix(in srgb, var(--accent) 45%, var(--subtle)); }
+.card-tile:focus-visible { outline: none; box-shadow: var(--focus); }
 .card-tile .tile-title { font-weight: 700; }
 .card-tile .tile-subtle { font-size: 12px; color: var(--muted); }
 
 /* New tile */
-.tile-new {
-  border-style: dashed;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  color: var(--accent);
-  background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--bg) 85%, #fff 15%));
-}
-.tile-new:hover {
-  border-color: var(--accent);
-}
+.tile-new { border-style: dashed; display: grid; place-items: center; text-align: center; color: var(--accent); background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--bg) 85%, #fff 15%)); }
+.tile-new:hover { border-color: var(--accent); }
 /* Force square aspect for specific tiles */
 .tile-square { aspect-ratio: 1 / 1; }
 
@@ -206,22 +199,9 @@ body {
 .button-link { color: var(--fg); text-decoration: none; }
 
 /* Glossy cute buttons and inputs */
-button, .btn {
-  font-family: inherit;
-  border-radius: 999px;
-  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
-}
-.btn-primary, button.btn-primary {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, white 12%), var(--accent-dark));
-  color: #fff;
-  border: 1px solid color-mix(in srgb, var(--accent-dark) 90%, black 10%);
-  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 30%, black 0%);
-}
-.btn-secondary, button.btn-secondary {
-  background: #fff;
-  color: var(--fg);
-  border: 1px solid var(--subtle);
-}
+button, .btn { font-family: inherit; border-radius: 999px; transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease; }
+.btn-primary, button.btn-primary { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, white 12%), var(--accent-dark)); color: #fff; border: 1px solid color-mix(in srgb, var(--accent-dark) 90%, black 10%); box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 30%, black 0%); }
+.btn-secondary, button.btn-secondary { background: #fff; color: var(--fg); border: 1px solid var(--subtle); }
 /* Compact button size to save vertical space */
 .btn-sm { padding: 4px 8px !important; font-size: 13px; line-height: 1.1; }
 
@@ -232,12 +212,7 @@ button:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 input[type='file'] { font-family: inherit; }
 
 /* Music toggle */
-.music-toggle {
-  border-radius: 999px;
-  border: 1px solid var(--subtle);
-  background: #fff;
-  padding: 6px 10px;
-}
+.music-toggle { border-radius: 999px; border: 1px solid var(--subtle); background: #fff; padding: 6px 10px; }
 
 /* Variants flag helper */
 .variant-badge { font-size: 11px; color: var(--muted); }
@@ -251,6 +226,7 @@ input[type='file'] { font-family: inherit; }
   min-height: 0; /* allow children to define scroll containers */
   /* prevent the main from scrolling in detail view so only messages scroll */
   overflow: hidden;
+  height: 100%;
 }
 /* Make the frame itself a flex column and contain overflow */
 .lesson-root .pearl-frame {
@@ -259,36 +235,30 @@ input[type='file'] { font-family: inherit; }
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden; /* prevent page scroll; messages will scroll */
+  height: 100%;
 }
 
 .lesson-layout {
   display: flex;
   flex-direction: column;
-  gap: 6px; /* tighter */
+  gap: 6px;
   flex: 1 1 auto;
-  min-height: 0; /* ensure the middle section can shrink */
+  min-height: 0;
+  height: 100%;
 }
 .lesson-header {
-  /* keep visual separation */
-  padding-bottom: 4px; /* tighter */
+  padding-bottom: 4px;
   border-bottom: 1px solid var(--subtle);
   background: var(--card);
   z-index: 1;
+  position: static; /* sits above the scroll container, so no sticky needed */
 }
-.lesson-messages {
-  flex: 1 1 auto;
-  min-height: 0; /* allow flex child to shrink and create an inner scroll area */
-  overflow: auto;
-  overscroll-behavior: contain;
-  padding: 0; /* maximize message area */
-}
+.lesson-messages { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 0; }
 .lesson-footer {
-  padding-top: 4px; /* tighter */
-  /* remove border-top to avoid double HR when PromptInput renders its own separator */
+  padding-top: 4px;
   border-top: 0;
   background: var(--card);
   z-index: 1;
+  position: static; /* sits below the scroll container */
 }
-@media (max-width: 640px) {
-  .lesson-layout { }
-}
+@media (max-width: 640px) { .lesson-layout { } }

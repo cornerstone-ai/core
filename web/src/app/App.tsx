@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
 import { CornerstoneList } from '../pages/CornerstoneList'
 import { CornerstoneNew } from '../pages/CornerstoneNew'
 import { CornerstoneDetail } from '../pages/CornerstoneDetail'
@@ -41,7 +41,7 @@ function HeaderBar() {
 
   return (
     <header className="header" role="banner" style={{ borderBottom: '1px solid #e5e7eb' }}>
-      <div className="header-inner" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px' }}>
+      <div className="header-inner">
         {/* Brand */}
         <div className="brand" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <Link to="/" style={{ textDecoration: 'none', color: 'inherit', fontWeight: 700 }}>Cornerstone</Link>
@@ -70,7 +70,7 @@ function HeaderBar() {
         </nav>
 
         {/* Right-side tools */}
-        <div className="tools" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="tools" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <MusicToggle />
           <ThemeSelector />
           {loading ? (
@@ -141,27 +141,36 @@ function HeaderBar() {
   )
 }
 
+function AppInner() {
+  const loc = useLocation()
+  const isLessonDetail = /^\/classes\/[^/]+\/lessons\/[^/]+$/.test(loc.pathname)
+  const mainClass = `main${isLessonDetail ? ' lesson-mode' : ''}`
+
+  return (
+    <div className="app-shell">
+      <HeaderBar />
+      <main className={mainClass} role="main" style={{ position: 'relative' }}>
+        <Motifs />
+        <Routes>
+          <Route path="/" element={<CornerstoneList />} />
+          <Route path="/new" element={<CornerstoneNew />} />
+          <Route path="/classes" element={<ClassesPage />} />
+          <Route path="/classes/:classId/lessons" element={<ClassLessonsPage />} />
+          <Route path="/classes/:classId/lessons/:sessionId" element={<ClassLessonsPage />} />
+          <Route path="/:docId" element={<CornerstoneDetail />} />
+          <Route path="*" element={<div>Not Found</div>} />
+        </Routes>
+      </main>
+    </div>
+  )
+}
+
 export function App() {
   return (
     <ThemeProvider>
-      <div className="app-shell">
-        <BrowserRouter>
-          <HeaderBar />
-
-          <main className="main" role="main" style={{ position: 'relative' }}>
-            <Motifs />
-            <Routes>
-              <Route path="/" element={<CornerstoneList />} />
-              <Route path="/new" element={<CornerstoneNew />} />
-              <Route path="/classes" element={<ClassesPage />} />
-              <Route path="/classes/:classId/lessons" element={<ClassLessonsPage />} />
-              <Route path="/classes/:classId/lessons/:sessionId" element={<ClassLessonsPage />} />
-              <Route path="/:docId" element={<CornerstoneDetail />} />
-              <Route path="*" element={<div>Not Found</div>} />
-            </Routes>
-          </main>
-        </BrowserRouter>
-      </div>
+      <BrowserRouter>
+        <AppInner />
+      </BrowserRouter>
     </ThemeProvider>
   )
 }
