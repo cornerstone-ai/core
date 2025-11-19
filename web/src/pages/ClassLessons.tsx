@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/public'
-import { setSelectedClassId } from '../features/classes/public'
+import { setSelectedClassId, useClassesList } from '../features/classes/public'
 import {
   useSessionsList,
   mapTopicInfoToSession,
@@ -38,6 +38,11 @@ export function ClassLessonsPage() {
   }, [classId])
 
   const { idToken, user } = useAuth()
+
+  // Load class metadata to show class name in the list title
+  const { projects: classes } = useClassesList({ idToken })
+  const currentClass = useMemo(() => classes.find(c => c.id === classId), [classes, classId])
+  const className = currentClass?.name || currentClass?.remote || 'Class'
 
   const { sessions, loading, error, reload } = useSessionsList({
     userId: user?.uid,
@@ -96,7 +101,18 @@ export function ClassLessonsPage() {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <h1 style={{ margin: 0, fontSize: 22 }}>Lessons</h1>
+        <div className="row" style={{ alignItems: 'center', gap: 8 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => navigate('/classes')}
+            aria-label="Back to classes"
+            style={{ padding: '8px 12px' }}
+          >
+            ← Classes
+          </button>
+          <h1 style={{ margin: 0, fontSize: 22 }}>{className} Lessons</h1>
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={reload} className="btn btn-secondary" style={{ padding: '8px 12px' }}>Refresh</button>
         </div>
