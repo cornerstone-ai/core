@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { useClassesList, NewClassModal, setSelectedClassId } from '../features/classes/public'
+import { useAuth } from '../features/auth/public'
 
 export function ClassesPage() {
-  // For now, no auth token wired; list will respect VITE_SKIP_AUTH=1 in dev
-  const { projects: classes, loading, error, reload } = useClassesList({ enabled: true })
+  const { idToken } = useAuth()
+  const { projects: classes, loading, error, reload } = useClassesList({ idToken, enabled: true })
   const [newOpen, setNewOpen] = useState(false)
 
   function handleSelect(id: string) {
@@ -64,6 +65,7 @@ export function ClassesPage() {
 
       {/* New Class modal (customized) */}
       <NewClassModal
+        idToken={idToken}
         open={newOpen}
         onClose={() => setNewOpen(false)}
         onCreated={(proj) => {
