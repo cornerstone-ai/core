@@ -11,3 +11,6 @@ export {
 
 // Local modal wrapper customized for Classes
 export { NewClassModal } from './NewClassModal'
+
+// Latest session hook for class subtitle
+export { useLatestSession } from './hooks/useLatestSession'

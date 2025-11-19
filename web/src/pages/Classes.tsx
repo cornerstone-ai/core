@@ -1,14 +1,42 @@
 import React, { useState } from 'react'
-import { useClassesList, NewClassModal, setSelectedClassId } from '../features/classes/public'
+import { useClassesList, NewClassModal, setSelectedClassId, useLatestSession } from '../features/classes/public'
 import { useAuth } from '../features/auth/public'
+import { useNavigate } from 'react-router-dom'
+
+function ClassTile({ c, onSelect, idToken }: { c: any; onSelect: (id: string) => void; idToken?: string | null }) {
+  const { title, loading, error } = useLatestSession({ projectId: c.id, idToken, enabled: true })
+
+  let subtitle: string = c.id
+  if (loading) subtitle = 'Loading…'
+  else if (error) subtitle = c.id
+  else if (title) subtitle = title
+  else subtitle = 'No lessons yet'
+
+  return (
+    <button
+      type="button"
+      className="card-tile"
+      onClick={() => onSelect(c.id)}
+      style={{ width: '100%', textAlign: 'left', minHeight: 130 }}
+      title={c.name || c.remote || c.id}
+    >
+      <div className="tile-title" style={{ marginBottom: 4 }}>
+        {c.name || c.remote || c.id}
+      </div>
+      <div className="tile-subtle">{subtitle}</div>
+    </button>
+  )
+}
 
 export function ClassesPage() {
+  const navigate = useNavigate()
   const { idToken } = useAuth()
   const { projects: classes, loading, error, reload } = useClassesList({ idToken, enabled: true })
   const [newOpen, setNewOpen] = useState(false)
 
   function handleSelect(id: string) {
     setSelectedClassId(id)
+    navigate(`/classes/${encodeURIComponent(id)}/lessons`)
   }
 
   return (
@@ -32,18 +60,7 @@ export function ClassesPage() {
         {/* Existing classes */}
         {!loading && classes.map((c) => (
           <li key={c.id}>
-            <button
-              type="button"
-              className="card-tile"
-              onClick={() => handleSelect(c.id)}
-              style={{ width: '100%', textAlign: 'left', minHeight: 130 }}
-              title={c.name || c.remote || c.id}
-            >
-              <div className="tile-title" style={{ marginBottom: 4 }}>
-                {c.name || c.remote || c.id}
-              </div>
-              <div className="tile-subtle">{c.id}</div>
-            </button>
+            <ClassTile c={c} onSelect={handleSelect} idToken={idToken} />
           </li>
         ))}
 
@@ -71,6 +88,7 @@ export function ClassesPage() {
         onCreated={(proj) => {
           setSelectedClassId(proj.id)
           reload()
+          navigate(`/classes/${encodeURIComponent(proj.id)}/lessons`)
         }}
       />
     </div>

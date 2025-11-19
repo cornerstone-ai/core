@@ -30,11 +30,11 @@ Accessibility and UX
 - Error surfaces with retry and support links.
 
 Tasks
-- [ ] Scaffold routes and lazy-loaded pages.
+- [x] Scaffold routes and lazy-loaded pages.
 - [ ] Implement upload with size/type validation; integrate sign endpoint.
 - [ ] Implement document registration and progress updates.
 - [ ] Build detail page with live status, artifacts list, and previews.
-- [ ] Implement theme switching and re-theme trigger.
+- [x] Implement theme switching and re-theme trigger.
 - [ ] Add skeleton loaders, toasts, and error boundaries.
 - [ ] Telemetry hooks for key actions.
 
