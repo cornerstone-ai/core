@@ -35,31 +35,32 @@ const activeStyle: React.CSSProperties = {
 }
 
 function Pill({
-  label,
+  icon,
+  ariaLabel,
   count,
   active,
   onClick,
-  color,
 }: {
-  label: string
+  icon: string
+  ariaLabel: string
   count: number
   active?: boolean
   onClick: () => void
-  color: string
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active || undefined}
+      aria-label={ariaLabel}
+      title={ariaLabel}
       style={{
         ...pillStyleBase,
         ...(active ? activeStyle : null),
         borderColor: active ? activeStyle.borderColor : '#e5e7eb',
       }}
     >
-      <span style={{ width: 8, height: 8, borderRadius: 999, background: color, display: 'inline-block' }} />
-      <span>{label}</span>
+      <span aria-hidden="true" style={{ fontSize: 14, lineHeight: 1 }}>{icon}</span>
       <span
         style={{
           minWidth: 18,
@@ -87,13 +88,10 @@ export function AssignmentStatusPills({ counts, active, onSelect, loading, style
 
   return (
     <div className="assignment-status-pills" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', ...(style || {}) }}>
-      <Pill label="Assigned" count={c.assigned} active={active === 'Assigned'} onClick={handle('Assigned')} color="#93c5fd" />
-      <Pill label="In Progress" count={c.inProgress} active={active === 'In Progress'} onClick={handle('In Progress')} color="#86efac" />
-      <Pill label="Finished" count={c.finished} active={active === 'Finished'} onClick={handle('Finished')} color="#facc15" />
-      <Pill label="Needs Attention" count={c.needsAttention} active={active === 'Needs Attention'} onClick={handle('Needs Attention')} color="#fda4af" />
-      {loading ? (
-        <span style={{ fontSize: 12, color: '#6b7280' }}>Loading…</span>
-      ) : null}
+      <Pill icon="📌" ariaLabel="Assigned" count={c.assigned} active={active === 'Assigned'} onClick={handle('Assigned')} />
+      <Pill icon="⏳" ariaLabel="In Progress" count={c.inProgress} active={active === 'In Progress'} onClick={handle('In Progress')} />
+      <Pill icon="✅" ariaLabel="Finished" count={c.finished} active={active === 'Finished'} onClick={handle('Finished')} />
+      <Pill icon="⚠️" ariaLabel="Needs Attention" count={c.needsAttention} active={active === 'Needs Attention'} onClick={handle('Needs Attention')} />
     </div>
   )
 }

@@ -27,6 +27,19 @@ function HeaderBar() {
     setSelectedClassIdState(getSelectedClassId())
   }, [loc.pathname])
 
+  // Responsive breakpoint for mobile UI elements (hamburger, drawer)
+  const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && 'matchMedia' in window ? window.matchMedia('(max-width: 768px)').matches : false)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return
+    const mq = window.matchMedia('(max-width: 768px)')
+    const onChange = () => setIsMobile(mq.matches)
+    mq.addEventListener ? mq.addEventListener('change', onChange) : mq.addListener(onChange)
+    onChange()
+    return () => {
+      mq.removeEventListener ? mq.removeEventListener('change', onChange) : mq.removeListener(onChange)
+    }
+  }, [])
+
   useEffect(() => {
     if (!mobileOpen) return
     const prev = (document.activeElement as HTMLElement | null) || null
@@ -72,42 +85,46 @@ function HeaderBar() {
 
   return (
     <header className="header" role="banner" style={{ borderBottom: '1px solid #e5e7eb' }}>
-      <div className="header-inner">
-        {/* Brand */}
-        <div className="brand" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit', fontWeight: 700 }}>Cornerstone</Link>
+      <div className="header-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '6px 10px' }}>
+        {/* Left cluster: brand + (mobile hamburger) + primary nav incl. class selector */}
+        <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          {isMobile && (
+            <button
+              className="app-hamburger"
+              aria-label="Open menu"
+              aria-controls="cs-mobile-menu"
+              aria-expanded={mobileOpen || undefined}
+              onClick={() => setMobileOpen(true)}
+              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}
+            >
+              ☰
+            </button>
+          )}
+
+          {/* Brand */}
+          <div className="brand" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <Link to="/" style={{ textDecoration: 'none', color: 'inherit', fontWeight: 700 }}>Cornerstone</Link>
+          </div>
+
+          {/* Left nav */}
+          <nav className="nav app-nav-left" aria-label="Primary" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'nowrap' }}>
+            <Link className="button-link" to="/classes" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Classes</Link>
+            <button
+              type="button"
+              onClick={onLessonsClick}
+              aria-disabled={lessonsDisabled || undefined}
+              title={lessonsDisabled ? 'Select a class to view lessons' : 'Open lessons'}
+              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: lessonsDisabled ? '#f9fafb' : 'white', color: lessonsDisabled ? '#9ca3af' : 'inherit', cursor: lessonsDisabled ? 'not-allowed' : 'pointer' }}
+            >
+              Lessons
+            </button>
+            <Link className="button-link" to="/assignments" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Assignments</Link>
+            <Link className="button-link" to="/teachers" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
+
+            {/* Class selector reusing awfl-web projects list */}
+            <ClassSelector idToken={idToken} includeManageOption onManage={onManageClasses} hideLabel onChange={handleClassChange} />
+          </nav>
         </div>
-
-        {/* Hamburger (mobile) */}
-        <button
-          className="app-hamburger"
-          aria-label="Open menu"
-          aria-controls="cs-mobile-menu"
-          aria-expanded={mobileOpen || undefined}
-          onClick={() => setMobileOpen(true)}
-          style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}
-        >
-          ☰
-        </button>
-
-        {/* Left nav */}
-        <nav className="nav app-nav-left" aria-label="Primary" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link className="button-link" to="/classes" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Classes</Link>
-          <button
-            type="button"
-            onClick={onLessonsClick}
-            aria-disabled={lessonsDisabled || undefined}
-            title={lessonsDisabled ? 'Select a class to view lessons' : 'Open lessons'}
-            style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: lessonsDisabled ? '#f9fafb' : 'white', color: lessonsDisabled ? '#9ca3af' : 'inherit', cursor: lessonsDisabled ? 'not-allowed' : 'pointer' }}
-          >
-            Lessons
-          </button>
-          <Link className="button-link" to="/assignments" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Assignments</Link>
-          <Link className="button-link" to="/teachers" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
-
-          {/* Class selector reusing awfl-web projects list */}
-          <ClassSelector idToken={idToken} includeManageOption onManage={onManageClasses} hideLabel onChange={handleClassChange} />
-        </nav>
 
         {/* Right-side tools */}
         <div className="tools" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

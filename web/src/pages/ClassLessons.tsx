@@ -179,6 +179,19 @@ export function ClassLessonsPage() {
 
   if (selectedId) {
     const title = selected ? (selected.title && selected.title.trim().length > 0 ? selected.title : selected.id) : selectedId
+
+    const onHeaderActivate = () => {
+      if (showingAssignments) lessonAssignments.setActiveAssignmentStatus(null)
+    }
+
+    const onHeaderKey = (e: React.KeyboardEvent) => {
+      if (!showingAssignments) return
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        lessonAssignments.setActiveAssignmentStatus(null)
+      }
+    }
+
     return (
       <div className="container" style={{ padding: '8px 12px 12px' }}>
         <div className="lesson-root">
@@ -196,7 +209,16 @@ export function ClassLessonsPage() {
                   ← Back
                 </button>
               </div>
-              <h1 style={{ margin: '2px 0 6px', fontSize: 20 }}>{title}</h1>
+              <h1
+                onClick={onHeaderActivate}
+                onKeyDown={onHeaderKey}
+                role={showingAssignments ? 'button' : undefined}
+                tabIndex={showingAssignments ? 0 : undefined}
+                title={showingAssignments ? 'Back to messages' : undefined}
+                style={{ margin: '2px 0 6px', fontSize: 20, cursor: showingAssignments ? 'pointer' : 'default' }}
+              >
+                {title}
+              </h1>
 
               {/* Assignment status pills */}
               <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -215,7 +237,6 @@ export function ClassLessonsPage() {
                   >
                     + Add
                   </button>
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={reloadAssignmentCounts}>Refresh</button>
                 </div>
               </div>
 
@@ -263,11 +284,7 @@ export function ClassLessonsPage() {
                       <AssignmentTile item={t} onOpen={() => lessonAssignments.handleEditAssignment(t)} />
                     </li>
                   ))}
-                  {lessonAssignments.loadingAssignments && (
-                    <li>
-                      <div className="card">Loading assignments…</div>
-                    </li>
-                  )}
+                  {/* No explicit loading label while fetching assignments */}
                   {!lessonAssignments.loadingAssignments && (lessonAssignments.sessionTasks || []).length === 0 && (
                     <li>
                       <div className="card" style={{ textAlign: 'center' }}>
