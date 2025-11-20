@@ -1,7 +1,7 @@
 Frontend Plan (awfl-web Cornerstone module)
 
 Scope
-- Build UI flows for upload, generation control, previews, and theming.
+- Build UI flows for upload, generation control, previews, theming, and assignments.
 
 Dependencies
 - API endpoints live; Firestore rules configured; themes defined.
@@ -13,6 +13,8 @@ Routes and Views
   - Upload flow: drag/drop, file picker, progress; signed URL upload; then register.
 - /cornerstone/:docId
   - Detail: status timeline, artifacts list, preview player (video, audio, text), theme selector, regenerate controls.
+- /assignments
+  - Assignments grid: rebranded Tasks list (Assigned/In Progress/Finished/Needs Attention), opens lesson detail on click.
 
 Components
 - UploadWidget: handles signed URL and Storage path validation.
@@ -20,10 +22,12 @@ Components
 - StatusTimeline: maps docs.status transitions with timestamps.
 - ArtifactsList: queries /docs/:docId/artifacts; download/preview links.
 - PreviewPlayer: video player with sidecar subtitles; audio-only fallback.
+- AssignmentsGrid: grid of assignments; AssignmentTile for each item; AssignmentStatusPills on lesson header.
 
 State and Data
 - Use Firestore listeners for docs/{docId} and derived collections.
 - Poll exec-links endpoints for detailed job lineage.
+- Reuse awfl-web tasks hooks for assignments (counts/list/CRUD) with status label mapping at boundaries.
 
 Accessibility and UX
 - Keyboard navigation; ARIA for controls; color contrast meets WCAG AA.
@@ -37,14 +41,17 @@ Tasks
 - [x] Implement theme switching and re-theme trigger.
 - [ ] Add skeleton loaders, toasts, and error boundaries.
 - [ ] Telemetry hooks for key actions.
+- [x] Assignments module: wrappers, status pills on lesson, grid page and route.
 
 Acceptance criteria
 - Can upload a PDF and complete end-to-end generation from the UI.
 - Previews display correctly; theme change triggers recomposition.
+- Assignments page shows assignments; clicking navigates to the owning lesson detail.
 
 Verification
 - Cypress E2E covering upload→publish.
 - Lighthouse accessibility score ≥ 90 on relevant pages.
+- Quick smoke: open /assignments, verify grid renders and deep-link works.
 
 References
 - Spec: ../SPEC.md

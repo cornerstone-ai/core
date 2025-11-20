@@ -9,6 +9,7 @@ import { ClassSelector } from '../features/classes/ClassSelector'
 import { ClassesPage } from '../pages/Classes'
 import { ClassLessonsPage } from '../pages/ClassLessons'
 import { TeachersPage } from '../pages/Teachers'
+import { AssignmentsPage } from '../pages/Assignments'
 import { useAuth } from '../features/auth/public'
 import { getSelectedClassId } from '../features/classes/public'
 
@@ -101,6 +102,7 @@ function HeaderBar() {
           >
             Lessons
           </button>
+          <Link className="button-link" to="/assignments" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Assignments</Link>
           <Link className="button-link" to="/teachers" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
 
           {/* Class selector reusing awfl-web projects list */}
@@ -169,6 +171,7 @@ function HeaderBar() {
               >
                 Lessons
               </button>
+              <Link to="/assignments" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Assignments</Link>
               <Link to="/teachers" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
 
               <div>
@@ -201,6 +204,7 @@ function AppInner() {
           <Route path="/" element={<CornerstoneList />} />
           <Route path="/new" element={<CornerstoneNew />} />
           <Route path="/classes" element={<ClassesPage />} />
+          <Route path="/assignments" element={<AssignmentsPage />} />
           <Route path="/teachers" element={<TeachersPage />} />
           <Route path="/classes/:classId/lessons" element={<ClassLessonsPage />} />
           <Route path="/classes/:classId/lessons/:sessionId" element={<ClassLessonsPage />} />

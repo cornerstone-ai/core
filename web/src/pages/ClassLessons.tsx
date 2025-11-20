@@ -17,6 +17,13 @@ import { useScrollHome } from '@awfl-web/core/public'
 import { useAgentWorkflowExecute } from '@awfl-web/features/agents/public'
 import { AgentModal, useAgentModalController, useSessionAgentConfig, useAgentsApi } from '../features/teachers/public'
 import { LessonTile, NewLessonModal } from '../features/lessons/public'
+import {
+  AssignmentStatusPills,
+  AssignmentTile,
+  AssignmentModal,
+  useAssignmentCounts,
+  useLessonAssignments,
+} from '../features/assignments/public'
 
 export function ClassLessonsPage() {
   const { classId: classIdParam, sessionId: sessionIdParam } = useParams()
@@ -76,12 +83,23 @@ export function ClassLessonsPage() {
   const selectedId = sessionIdParam || null
   const selected = useMemo(() => (lessonsServer.find(s => s.id === selectedId) || null), [lessonsServer, selectedId])
 
+  // Assignments (session-scoped): counts + inline list
+  const { counts: assignmentCounts, loading: countsLoading, reload: reloadAssignmentCounts } = useAssignmentCounts({ sessionId: selectedId, idToken, enabled: !!selectedId })
+  const lessonAssignments = useLessonAssignments({
+    sessionId: selectedId,
+    idToken,
+    enabled: !!selectedId,
+    reloadAssignmentCounts: reloadAssignmentCounts,
+  })
+
+  const showingAssignments = !!lessonAssignments.activeAssignmentStatus
+
   // Yoj context for the selected lesson (session)
   const { messages, running, error: execError, reload: reloadYoj } = useTopicContextYoj({
     sessionId: selectedId,
     idToken,
     windowSeconds: 3600,
-    enabled: !!selectedId,
+    enabled: !!selectedId && !showingAssignments,
   })
 
   // Compute session-derived workflow name (used for AgentModal defaults)
@@ -97,7 +115,7 @@ export function ClassLessonsPage() {
     idToken,
     pendingAgentId: (agentConfig as any)?.agent?.id || (agentConfig as any)?.agentId,
     session: (selected as any) || undefined,
-    enabled: !!selectedId,
+    enabled: !!selectedId && !showingAssignments,
   })
 
   // Assistant label: prefer configured agent name; fallback to "Assistant"
@@ -124,28 +142,39 @@ export function ClassLessonsPage() {
     } catch {}
   }
 
-  // Poll every second while not running; no-op task reloads (we only show messages here)
+  // Poll every second while not running; reload either messages or assignments counts/list
   useSessionPolling({
     enabled: !!selectedId,
     sessionId: selectedId,
-    activeTaskStatus: null,
+    activeTaskStatus: lessonAssignments.activeAssignmentStatus as any,
     running: !!running,
-    reloadMessages: reloadYoj,
-    reloadTaskCounts: () => {},
-    reloadInlineTasks: () => {},
+    reloadMessages: showingAssignments ? () => {} : reloadYoj,
+    reloadTaskCounts: reloadAssignmentCounts,
+    reloadInlineTasks: lessonAssignments.reloadAssignments,
     intervalMs: 1000,
   })
 
-  // Autoscroll management: messages area is the scroll container, anchored to bottom
+  // Autoscroll management
   const messagesRef = useRef<HTMLDivElement | null>(null)
-  const homeAnchorRef = useRef<HTMLDivElement | null>(null)
+  const messagesHomeRef = useRef<HTMLDivElement | null>(null)
   useScrollHome({
     containerRef: messagesRef,
-    anchorRef: homeAnchorRef,
+    anchorRef: messagesHomeRef,
     itemCount: (messages || []).length,
     home: 'bottom',
-    enabled: !!selectedId,
+    enabled: !!selectedId && !showingAssignments,
     key: selectedId || undefined,
+  })
+
+  const assignmentsRef = useRef<HTMLDivElement | null>(null)
+  const assignmentsHomeRef = useRef<HTMLDivElement | null>(null)
+  useScrollHome({
+    containerRef: assignmentsRef,
+    anchorRef: assignmentsHomeRef,
+    itemCount: (lessonAssignments.sessionTasks || []).length,
+    home: 'top',
+    enabled: !!selectedId && showingAssignments,
+    key: `${selectedId || ''}:${lessonAssignments.activeAssignmentStatus || ''}`,
   })
 
   if (selectedId) {
@@ -166,67 +195,105 @@ export function ClassLessonsPage() {
                 >
                   ← Back
                 </button>
-                <div className="row" style={{ gap: 6 }}>
+              </div>
+              <h1 style={{ margin: '2px 0 6px', fontSize: 20 }}>{title}</h1>
+
+              {/* Assignment status pills */}
+              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <AssignmentStatusPills
+                  counts={assignmentCounts || undefined}
+                  loading={countsLoading}
+                  active={lessonAssignments.activeAssignmentStatus}
+                  onSelect={lessonAssignments.setActiveAssignmentStatus}
+                />
+                <div style={{ display: 'flex', gap: 6 }}>
                   <button
                     type="button"
-                    onClick={() => { reload(); reloadYoj(); }}
-                    className="btn btn-secondary btn-sm"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => lessonAssignments.openAddAssignment()}
+                    title="Add assignment"
                   >
-                    Refresh
+                    + Add
                   </button>
-                  <button
-                    type="button"
-                    onClick={agent.openEdit}
-                    className="btn btn-secondary btn-sm"
-                  >
-                    Edit Teacher
-                  </button>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={reloadAssignmentCounts}>Refresh</button>
                 </div>
               </div>
-              <h1 style={{ margin: '2px 0 0', fontSize: 20 }}>{title}</h1>
-              {loading && <div style={{ color: '#6b7280', marginTop: 4 }}>Loading…</div>}
+
               {error && (
                 <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
                   {error}
                 </div>
               )}
-              {execError && (
-                <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                  {execError}
-                </div>
-              )}
-              {awx?.error && (
-                <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                  {String(awx.error)}
-                </div>
+              {!showingAssignments && (
+                <>
+                  {execError && (
+                    <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
+                      {execError}
+                    </div>
+                  )}
+                  {awx?.error && (
+                    <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
+                      {String(awx.error)}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
-            {/* Scrollable messages area with yoj theme variables */}
-            <div ref={messagesRef} className="lesson-messages yoj-theme">
-              <YojMessageList
-                messages={messages as any}
-                sessionId={selectedId || undefined}
-                idToken={idToken || undefined}
-                assistantName={assistantName}
-                hideExecGutter={isMobile}
-              />
-              {/* Bottom anchor for reliable scrollIntoView */}
-              <div ref={homeAnchorRef} aria-hidden="true" style={{ height: 1, overflowAnchor: 'none' as any }} />
-            </div>
+            {/* Scrollable middle area: messages OR assignments list */}
+            {!showingAssignments ? (
+              <div ref={messagesRef} className="lesson-messages yoj-theme">
+                <YojMessageList
+                  messages={messages as any}
+                  sessionId={selectedId || undefined}
+                  idToken={idToken || undefined}
+                  assistantName={assistantName}
+                  hideExecGutter={isMobile}
+                />
+                {/* Bottom anchor for reliable scrollIntoView */}
+                <div ref={messagesHomeRef} aria-hidden="true" style={{ height: 1, overflowAnchor: 'none' as any }} />
+              </div>
+            ) : (
+              <div ref={assignmentsRef} className="lesson-messages" style={{ padding: 8 }}>
+                {/* Top anchor for reliable scrollIntoView */}
+                <div ref={assignmentsHomeRef} aria-hidden="true" style={{ height: 1, overflowAnchor: 'none' as any }} />
+                <ul className="grid-cards" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {(lessonAssignments.sessionTasks || []).map((t: any) => (
+                    <li key={t.id}>
+                      <AssignmentTile item={t} onOpen={() => lessonAssignments.handleEditAssignment(t)} />
+                    </li>
+                  ))}
+                  {lessonAssignments.loadingAssignments && (
+                    <li>
+                      <div className="card">Loading assignments…</div>
+                    </li>
+                  )}
+                  {!lessonAssignments.loadingAssignments && (lessonAssignments.sessionTasks || []).length === 0 && (
+                    <li>
+                      <div className="card" style={{ textAlign: 'center' }}>
+                        <div style={{ fontWeight: 700, marginBottom: 4 }}>No assignments</div>
+                        <div className="tile-subtle">Select a status above or add a new assignment.</div>
+                      </div>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
 
             {/* Footer (submit) without white background */}
-            <div className="lesson-footer prompt-plain">
-              <PromptInput
-                placeholder={awx?.workflowName ? `Trigger workflow ${awx.workflowName}…` : 'Type a prompt and press Enter…'}
-                status={awx?.status}
-                running={awx?.running}
-                submitting={submitting}
-                onSubmit={handlePromptSubmit}
-                onStop={handleStop}
-                disabled={!selectedId}
-              />
-            </div>
+            {!showingAssignments && (
+              <div className="lesson-footer prompt-plain">
+                <PromptInput
+                  placeholder={awx?.workflowName ? `Trigger workflow ${awx.workflowName}…` : 'Type a prompt and press Enter…'}
+                  status={awx?.status}
+                  running={awx?.running}
+                  submitting={submitting}
+                  onSubmit={handlePromptSubmit}
+                  onStop={handleStop}
+                  disabled={!selectedId}
+                />
+              </div>
+            )}
           </div>
 
           <AgentModal
@@ -241,6 +308,19 @@ export function ClassLessonsPage() {
               await agent.onSave(input)
               await agentConfig.reload()
             }}
+          />
+
+          {/* Assignment create/edit modal */}
+          <AssignmentModal
+            open={lessonAssignments.assignmentModalOpen}
+            mode={lessonAssignments.assignmentModalMode as any}
+            task={lessonAssignments.editingAssignment as any}
+            onClose={lessonAssignments.closeAssignmentModal}
+            onSave={async (input: any) => {
+              await lessonAssignments.handleSaveAssignment(input)
+              await lessonAssignments.reloadAssignments()
+            }}
+            onDelete={lessonAssignments.handleDeleteAssignment as any}
           />
         </div>
       </div>

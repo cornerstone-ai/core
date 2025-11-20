@@ -33,6 +33,10 @@ Routing and features
   - features/preview: PreviewPlayer (video with subtitles; audio fallback; text preview when needed).
   - features/themes: ThemeSelector and theme trigger for recomposition.
   - features/status: live status/polling UI.
+- /assignments (Assignments grid)
+  - features/assignments: Thin wrapper over awfl-web tasks for list/CRUD with rebranded labels.
+  - Components: AssignmentStatusPills, AssignmentTile, AssignmentsGrid.
+  - Hooks: useAssignmentCounts, useLessonAssignments, useAssignmentsList (alias to tasks list) via public.ts.
 
 Theming model (from SPEC)
 - Theme ids: lightPink, lightBlue, lightGreen, lightOrange, lightYellow, lightPurple, grey, lightRed.
@@ -75,3 +79,10 @@ Public import surfaces (examples)
 Next steps toward shared kit
 - Introduce @awfl/kit for primitives (Button, Input, Skeleton, ErrorBanner) and hooks (useAbortableAsync, usePolling).
 - Replace local kit and core hooks with awfl-kit equivalents once published.
+
+---
+Update: Assignments module
+- New feature module reusing awfl-web tasks under assignments branding.
+- Status mapping: Queued→Assigned, In Progress→In Progress, Done→Finished, Stuck→Needs Attention.
+- Lesson detail header exposes AssignmentStatusPills that toggle the assignments list.
+- New /assignments page renders a grid view via AssignmentsGrid; opening an item deep-links to lesson detail.

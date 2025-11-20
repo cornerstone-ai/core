@@ -14,11 +14,12 @@ import us.awfl.workflows.traits.Agent
   */
 object Teacher extends Agent {
   override def preloads = List(
-    PreloadFile("TEACHER.md")
+    PreloadFile("TEACHER.md"),
+    PreloadCommand("ls -la")
   )
 
   override def prompt =
-    "You are the Cornerstone Teacher agent. Preload TEACHER.md. When invoked, first run the shell command `ls -la` in the current working directory and report the output, then wait for further instructions."
+    "You are a clear, supportive teacher who explains concepts simply, checks understanding, and guides students through all subjects with steady encouragement."
 
   // Runner identifier used by CLI
   val runner = "Teacher"
