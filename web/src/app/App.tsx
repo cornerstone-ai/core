@@ -55,6 +55,18 @@ function HeaderBar() {
     setMobileOpen(false)
   }
 
+  // When class changes from the selector, keep the current context.
+  // If user is on a lessons route, navigate to the new class's lessons LIST (no auto-open).
+  const handleClassChange = (nextId: string) => {
+    setSelectedClassIdState(nextId)
+    const isLessonsRoute = /^\/classes\/[^/]+\/lessons(\/[^/]+)?$/.test(loc.pathname)
+    if (isLessonsRoute) {
+      navigate(`/classes/${encodeURIComponent(nextId)}/lessons`)
+    }
+    // Close mobile drawer if open
+    if (mobileOpen) setMobileOpen(false)
+  }
+
   const lessonsDisabled = !selectedClassId
 
   return (
@@ -92,7 +104,7 @@ function HeaderBar() {
           <Link className="button-link" to="/teachers" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
 
           {/* Class selector reusing awfl-web projects list */}
-          <ClassSelector idToken={idToken} includeManageOption onManage={onManageClasses} hideLabel onChange={setSelectedClassIdState} />
+          <ClassSelector idToken={idToken} includeManageOption onManage={onManageClasses} hideLabel onChange={handleClassChange} />
         </nav>
 
         {/* Right-side tools */}
@@ -160,7 +172,7 @@ function HeaderBar() {
               <Link to="/teachers" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
 
               <div>
-                <ClassSelector idToken={idToken} label="Class" includeManageOption onManage={onManageClasses} onChange={setSelectedClassIdState} style={{ marginTop: 8 }} />
+                <ClassSelector idToken={idToken} label="Class" includeManageOption onManage={onManageClasses} onChange={handleClassChange} style={{ marginTop: 8 }} />
               </div>
 
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>

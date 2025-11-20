@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/public'
 import { setSelectedClassId, useClassesList } from '../features/classes/public'
 import {
@@ -37,6 +37,7 @@ function LessonTile({ lesson, onClick }: { lesson: Session; onClick: () => void 
 export function ClassLessonsPage() {
   const { classId: classIdParam, sessionId: sessionIdParam } = useParams()
   const navigate = useNavigate()
+  const loc = useLocation()
   const classId = decodeURIComponent(classIdParam || '')
 
   useEffect(() => {
@@ -78,6 +79,8 @@ export function ClassLessonsPage() {
 
   // Detail route present? render the single-lesson view
   const selectedId = sessionIdParam || null
+
+  // Removed auto-open redirect: switching classes while on lessons should show the list for the new class.
 
   // Yoj context for the selected lesson (session)
   const { messages, running, error: execError, reload: reloadYoj } = useTopicContextYoj({
