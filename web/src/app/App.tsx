@@ -8,14 +8,23 @@ import { MusicToggle } from '../features/music/public'
 import { ClassSelector } from '../features/classes/ClassSelector'
 import { ClassesPage } from '../pages/Classes'
 import { ClassLessonsPage } from '../pages/ClassLessons'
+import { TeachersPage } from '../pages/Teachers'
 import { useAuth } from '../features/auth/public'
+import { getSelectedClassId } from '../features/classes/public'
 
 function HeaderBar() {
   const navigate = useNavigate()
+  const loc = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const closeBtnRef = useRef<HTMLButtonElement | null>(null)
 
-  const { user, loading, signIn, signOut } = useAuth()
+  const { user, loading, signIn, signOut, idToken } = useAuth()
+
+  const [selectedClassId, setSelectedClassIdState] = useState<string>(() => getSelectedClassId())
+  useEffect(() => {
+    // Re-sync selected class on route changes (e.g., when visiting a lessons route directly)
+    setSelectedClassIdState(getSelectedClassId())
+  }, [loc.pathname])
 
   useEffect(() => {
     if (!mobileOpen) return
@@ -39,6 +48,15 @@ function HeaderBar() {
     setMobileOpen(false)
   }
 
+  const onLessonsClick = () => {
+    const cid = getSelectedClassId() || selectedClassId
+    if (cid) navigate(`/classes/${encodeURIComponent(cid)}/lessons`)
+    else navigate('/classes')
+    setMobileOpen(false)
+  }
+
+  const lessonsDisabled = !selectedClassId
+
   return (
     <header className="header" role="banner" style={{ borderBottom: '1px solid #e5e7eb' }}>
       <div className="header-inner">
@@ -61,12 +79,20 @@ function HeaderBar() {
 
         {/* Left nav */}
         <nav className="nav app-nav-left" aria-label="Primary" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link className="button-link" to="/" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Documents</Link>
-          <Link className="button-link" to="/new" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>New</Link>
           <Link className="button-link" to="/classes" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Classes</Link>
+          <button
+            type="button"
+            onClick={onLessonsClick}
+            aria-disabled={lessonsDisabled || undefined}
+            title={lessonsDisabled ? 'Select a class to view lessons' : 'Open lessons'}
+            style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: lessonsDisabled ? '#f9fafb' : 'white', color: lessonsDisabled ? '#9ca3af' : 'inherit', cursor: lessonsDisabled ? 'not-allowed' : 'pointer' }}
+          >
+            Lessons
+          </button>
+          <Link className="button-link" to="/teachers" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
 
           {/* Class selector reusing awfl-web projects list */}
-          <ClassSelector includeManageOption onManage={onManageClasses} hideLabel />
+          <ClassSelector idToken={idToken} includeManageOption onManage={onManageClasses} hideLabel onChange={setSelectedClassIdState} />
         </nav>
 
         {/* Right-side tools */}
@@ -121,12 +147,20 @@ function HeaderBar() {
               </button>
             </div>
             <div className="drawer-body" style={{ display: 'grid', gap: 8, padding: 12 }}>
-              <Link to="/" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Documents</Link>
-              <Link to="/new" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>New</Link>
               <Link to="/classes" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Classes</Link>
+              <button
+                type="button"
+                onClick={onLessonsClick}
+                aria-disabled={lessonsDisabled || undefined}
+                title={lessonsDisabled ? 'Select a class to view lessons' : 'Open lessons'}
+                style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: lessonsDisabled ? '#f9fafb' : 'white', color: lessonsDisabled ? '#9ca3af' : 'inherit', cursor: lessonsDisabled ? 'not-allowed' : 'pointer' }}
+              >
+                Lessons
+              </button>
+              <Link to="/teachers" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
 
               <div>
-                <ClassSelector label="Class" includeManageOption onManage={onManageClasses} style={{ marginTop: 8 }} />
+                <ClassSelector idToken={idToken} label="Class" includeManageOption onManage={onManageClasses} onChange={setSelectedClassIdState} style={{ marginTop: 8 }} />
               </div>
 
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
@@ -155,6 +189,7 @@ function AppInner() {
           <Route path="/" element={<CornerstoneList />} />
           <Route path="/new" element={<CornerstoneNew />} />
           <Route path="/classes" element={<ClassesPage />} />
+          <Route path="/teachers" element={<TeachersPage />} />
           <Route path="/classes/:classId/lessons" element={<ClassLessonsPage />} />
           <Route path="/classes/:classId/lessons/:sessionId" element={<ClassLessonsPage />} />
           <Route path="/:docId" element={<CornerstoneDetail />} />

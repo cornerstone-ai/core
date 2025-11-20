@@ -4,6 +4,7 @@ import us.awfl.dsl.*
 import us.awfl.dsl.CelOps.*
 import us.awfl.dsl.auto.given
 import us.awfl.workflows.traits.Agent
+import us.awfl.workflows.traits.Funds
 
 object Frontend extends Agent {
   override def preloads = List(
