@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/public'
 import { setSelectedClassId, useClassesList } from '../features/classes/public'
 import {
@@ -8,36 +8,19 @@ import {
   type Session,
   useSessionPolling,
   getWorkflowName,
+  mergeSessions,
+  useNewSessionCreation,
 } from '@awfl-web/features/sessions/public'
 import { useTopicContextYoj, YojMessageList } from '@awfl-web/features/yoj/public'
 import { PromptInput } from '@awfl-web/components/public'
-import { useWorkflowExec, useScrollHome } from '@awfl-web/core/public'
-import { AgentModal, useAgentModalController, useSessionAgentConfig } from '../features/teachers/public'
-
-function formatWhen(iso: string | undefined) {
-  if (!iso) return ''
-  try {
-    const d = new Date(iso)
-    if (!Number.isNaN(d.getTime())) return d.toLocaleString()
-  } catch {}
-  return String(iso)
-}
-
-function LessonTile({ lesson, onClick }: { lesson: Session; onClick: () => void }) {
-  const title = (lesson.title && lesson.title.trim().length > 0 ? lesson.title : lesson.id) as string
-  const subtitle = formatWhen(lesson.updatedAt)
-  return (
-    <button type="button" className="card-tile" onClick={onClick} style={{ width: '100%', textAlign: 'left', minHeight: 110 }}>
-      <div className="tile-title" style={{ marginBottom: 4 }}>{title}</div>
-      {subtitle && <div className="tile-subtle">{subtitle}</div>}
-    </button>
-  )
-}
+import { useScrollHome } from '@awfl-web/core/public'
+import { useAgentWorkflowExecute } from '@awfl-web/features/agents/public'
+import { AgentModal, useAgentModalController, useSessionAgentConfig, useAgentsApi } from '../features/teachers/public'
+import { LessonTile, NewLessonModal } from '../features/lessons/public'
 
 export function ClassLessonsPage() {
   const { classId: classIdParam, sessionId: sessionIdParam } = useParams()
   const navigate = useNavigate()
-  const loc = useLocation()
   const classId = decodeURIComponent(classIdParam || '')
 
   useEffect(() => {
@@ -75,12 +58,23 @@ export function ClassLessonsPage() {
     mapDocToSession: mapTopicInfoToSession,
   })
 
-  const lessons: Session[] = useMemo(() => sessions || [], [sessions])
+  // Ephemeral creation support (appears immediately in list)
+  const agentsApi = useAgentsApi({ idToken })
+  const { ephemeralSessions, createNewSession } = useNewSessionCreation({
+    userId: user?.uid || null,
+    projectId: classId,
+    // No auto-exec for list creation; detail view execution is guarded separately
+    startWf: () => Promise.resolve(undefined),
+    agentsApi,
+    autoStart: false,
+  })
+
+  const lessonsServer: Session[] = useMemo(() => sessions || [], [sessions])
+  const lessons: Session[] = useMemo(() => mergeSessions(lessonsServer, ephemeralSessions), [lessonsServer, ephemeralSessions])
 
   // Detail route present? render the single-lesson view
   const selectedId = sessionIdParam || null
-
-  // Removed auto-open redirect: switching classes while on lessons should show the list for the new class.
+  const selected = useMemo(() => (lessonsServer.find(s => s.id === selectedId) || null), [lessonsServer, selectedId])
 
   // Yoj context for the selected lesson (session)
   const { messages, running, error: execError, reload: reloadYoj } = useTopicContextYoj({
@@ -90,45 +84,35 @@ export function ClassLessonsPage() {
     enabled: !!selectedId,
   })
 
-  // Workflow exec wiring (status/start/stop) for the selected session
-  const { status: wfStatus, running: wfRunning, error: wfError, start: startWf, stop: stopWf } = useWorkflowExec({
-    sessionId: selectedId || undefined,
-    idToken,
-    enabled: !!selectedId,
-  })
-
-  // Keep a ref of the current selected session id to avoid stale captures in handlers
-  const currentSessionIdRef = useRef<string | null>(null)
-  useEffect(() => {
-    currentSessionIdRef.current = selectedId || null
-  }, [selectedId])
-
-  // Wrapper that always injects the latest sessionId when starting a workflow
-  function startWfForCurrentSession(workflowName: string, input?: { query?: string }, opts?: { sessionId?: string }) {
-    const sid = opts?.sessionId ?? currentSessionIdRef.current ?? undefined
-    return startWf(workflowName, { query: input?.query ?? '' }, { ...opts, sessionId: sid })
-  }
-
-  // Compute session-derived workflow name
+  // Compute session-derived workflow name (used for AgentModal defaults)
   const sessionWorkflowName = getWorkflowName(selectedId || '')
 
   // Server-backed session agent config (single source of truth for agent + workflow)
   const agent = useAgentModalController({ idToken, sessionId: selectedId || null, workflowName: sessionWorkflowName || null, enabled: !!selectedId })
   const agentConfig = useSessionAgentConfig({ idToken, sessionId: selectedId, enabled: !!selectedId })
 
-  // Effective workflow chosen from agent configuration, falling back to session-derived
-  const effectiveWorkflowName = agentConfig.workflowName || sessionWorkflowName || null
+  // Turnkey workflow execution wired to resolved agent/workflow for this session
+  const awx = useAgentWorkflowExecute({
+    sessionId: selectedId || undefined,
+    idToken,
+    pendingAgentId: (agentConfig as any)?.agent?.id || (agentConfig as any)?.agentId,
+    session: (selected as any) || undefined,
+    enabled: !!selectedId,
+  })
 
   // Assistant label: prefer configured agent name; fallback to "Assistant"
   const assistantName = (agentConfig.agent?.name?.trim?.() || '').trim() || 'Assistant'
 
   const [submitting, setSubmitting] = useState(false)
 
+  // List-view modal state MUST be declared before any conditional return to preserve hook order
+  const [newOpen, setNewOpen] = useState(false)
+
   async function handlePromptSubmit(text: string) {
-    if (!effectiveWorkflowName) return
+    if (!awx?.canExecute) return
     try {
       setSubmitting(true)
-      await startWfForCurrentSession(effectiveWorkflowName, { query: text })
+      await awx.execute({ query: text })
     } finally {
       setSubmitting(false)
     }
@@ -136,7 +120,7 @@ export function ClassLessonsPage() {
 
   async function handleStop() {
     try {
-      await stopWf({ includeDescendants: true, workflow: effectiveWorkflowName || undefined })
+      await awx.stop?.({ includeDescendants: true })
     } catch {}
   }
 
@@ -165,7 +149,6 @@ export function ClassLessonsPage() {
   })
 
   if (selectedId) {
-    const selected = lessons.find(s => s.id === selectedId)
     const title = selected ? (selected.title && selected.title.trim().length > 0 ? selected.title : selected.id) : selectedId
     return (
       <div className="container" style={{ padding: '8px 12px 12px' }}>
@@ -212,9 +195,9 @@ export function ClassLessonsPage() {
                   {execError}
                 </div>
               )}
-              {wfError && (
+              {awx?.error && (
                 <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                  {wfError}
+                  {String(awx.error)}
                 </div>
               )}
             </div>
@@ -235,9 +218,9 @@ export function ClassLessonsPage() {
             {/* Footer (submit) without white background */}
             <div className="lesson-footer prompt-plain">
               <PromptInput
-                placeholder={effectiveWorkflowName ? `Trigger workflow ${effectiveWorkflowName}…` : 'Type a prompt and press Enter…'}
-                status={wfStatus}
-                running={wfRunning}
+                placeholder={awx?.workflowName ? `Trigger workflow ${awx.workflowName}…` : 'Type a prompt and press Enter…'}
+                status={awx?.status}
+                running={awx?.running}
                 submitting={submitting}
                 onSubmit={handlePromptSubmit}
                 onStop={handleStop}
@@ -280,6 +263,7 @@ export function ClassLessonsPage() {
           <h1 style={{ margin: 0, fontSize: 22 }}>{className} Lessons</h1>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => setNewOpen(true)} className="btn btn-primary btn-sm">New Lesson</button>
           <button onClick={reload} className="btn btn-secondary btn-sm">Refresh</button>
         </div>
       </div>
@@ -305,11 +289,22 @@ export function ClassLessonsPage() {
           <li>
             <div className="card" style={{ textAlign: 'center' }}>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>No lessons yet</div>
-              <div className="tile-subtle">New lessons will appear here once created.</div>
+              <div className="tile-subtle">Create the first lesson to get started.</div>
+              <div style={{ marginTop: 10 }}>
+                <button onClick={() => setNewOpen(true)} className="btn btn-primary btn-sm">New Lesson</button>
+              </div>
             </div>
           </li>
         )}
       </ul>
+
+      <NewLessonModal
+        open={newOpen}
+        classId={classId}
+        onClose={() => setNewOpen(false)}
+        onCreated={(sessionId) => navigate(`/classes/${encodeURIComponent(classId)}/lessons/${encodeURIComponent(sessionId)}`)}
+        createNewSession={createNewSession}
+      />
     </div>
   )
 }

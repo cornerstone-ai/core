@@ -1,0 +1,66 @@
+{
+  "name" : "org-cornerstoneai-workflows-teachers-Teacher-Input",
+  "description" : "Schema inferred from deriver sample JSON for org.cornerstoneai.workflows.teachers.Teacher.Input.",
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "task" : {
+        "type" : "string"
+      },
+      "query" : {
+        "type" : "string"
+      },
+      "fund" : {
+        "type" : "integer"
+      },
+      "env" : {
+        "type" : "object",
+        "properties" : {
+          "callingWorkflowExec" : {
+            "type" : "string"
+          },
+          "model" : {
+            "type" : "string"
+          },
+          "background" : {
+            "type" : "boolean"
+          },
+          "projectId" : {
+            "type" : "string"
+          },
+          "sessionId" : {
+            "type" : "string"
+          },
+          "userId" : {
+            "type" : "string"
+          },
+          "BASE_URL" : {
+            "type" : "string"
+          }
+        },
+        "required" : [
+          "userId",
+          "model",
+          "callingWorkflowExec",
+          "BASE_URL",
+          "background",
+          "projectId",
+          "sessionId"
+        ],
+        "additionalProperties" : true
+      },
+      "spent" : {
+        "type" : "integer"
+      }
+    },
+    "required" : [
+      "query",
+      "fund",
+      "spent",
+      "task",
+      "env"
+    ],
+    "additionalProperties" : true,
+    "$id" : "https://topaigents.dev/workflows/types/org-cornerstoneai-workflows-teachers-Teacher-Input.json"
+  }
+}
