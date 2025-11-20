@@ -212,7 +212,7 @@ export function ClassLessonsPage() {
                 hideExecGutter={isMobile}
               />
               {/* Bottom anchor for reliable scrollIntoView */}
-              <div ref={homeAnchorRef} aria-hidden="true" />
+              <div ref={homeAnchorRef} aria-hidden="true" style={{ height: 1, overflowAnchor: 'none' as any }} />
             </div>
 
             {/* Footer (submit) without white background */}
