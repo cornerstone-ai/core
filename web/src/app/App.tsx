@@ -27,6 +27,29 @@ function HeaderBar() {
     setSelectedClassIdState(getSelectedClassId())
   }, [loc.pathname])
 
+  // Shared button aesthetic for nav/tools and drawer actions
+  const navButtonBase: React.CSSProperties = {
+    padding: '6px 10px',
+    borderRadius: 6,
+    border: '1px solid #d1d5db',
+    background: 'white',
+    color: 'inherit',
+    textDecoration: 'none',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    // Ensure buttons match link font sizing across browsers
+    font: 'inherit',
+    lineHeight: 1.2,
+  }
+  const navButtonDisabled: React.CSSProperties = {
+    ...navButtonBase,
+    background: '#f9fafb',
+    color: '#9ca3af',
+    cursor: 'not-allowed',
+    pointerEvents: 'none',
+  }
+
   // Responsive breakpoint for mobile UI elements (hamburger, drawer)
   const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && 'matchMedia' in window ? window.matchMedia('(max-width: 768px)').matches : false)
   useEffect(() => {
@@ -62,13 +85,6 @@ function HeaderBar() {
     setMobileOpen(false)
   }
 
-  const onLessonsClick = () => {
-    const cid = getSelectedClassId() || selectedClassId
-    if (cid) navigate(`/classes/${encodeURIComponent(cid)}/lessons`)
-    else navigate('/classes')
-    setMobileOpen(false)
-  }
-
   // When class changes from the selector, keep the current context.
   // If user is on a lessons route, navigate to the new class's lessons LIST (no auto-open).
   const handleClassChange = (nextId: string) => {
@@ -82,6 +98,8 @@ function HeaderBar() {
   }
 
   const lessonsDisabled = !selectedClassId
+  const currentCid = getSelectedClassId() || selectedClassId
+  const lessonsHref = currentCid ? `/classes/${encodeURIComponent(currentCid)}/lessons` : '/classes'
 
   return (
     <header className="header" role="banner" style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -95,7 +113,7 @@ function HeaderBar() {
               aria-controls="cs-mobile-menu"
               aria-expanded={mobileOpen || undefined}
               onClick={() => setMobileOpen(true)}
-              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}
+              style={navButtonBase}
             >
               ☰
             </button>
@@ -108,18 +126,21 @@ function HeaderBar() {
 
           {/* Left nav */}
           <nav className="nav app-nav-left" aria-label="Primary" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'nowrap' }}>
-            <Link className="button-link" to="/classes" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Classes</Link>
-            <button
-              type="button"
-              onClick={onLessonsClick}
+            <Link className="button-link" to="/classes" style={navButtonBase}>Classes</Link>
+            <Link
+              className="button-link"
+              to={lessonsHref}
               aria-disabled={lessonsDisabled || undefined}
               title={lessonsDisabled ? 'Select a class to view lessons' : 'Open lessons'}
-              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: lessonsDisabled ? '#f9fafb' : 'white', color: lessonsDisabled ? '#9ca3af' : 'inherit', cursor: lessonsDisabled ? 'not-allowed' : 'pointer' }}
+              style={lessonsDisabled ? navButtonDisabled : navButtonBase}
+              onClick={(e) => {
+                if (lessonsDisabled) e.preventDefault()
+              }}
             >
               Lessons
-            </button>
-            <Link className="button-link" to="/assignments" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Assignments</Link>
-            <Link className="button-link" to="/teachers" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
+            </Link>
+            <Link className="button-link" to="/assignments" style={navButtonBase}>Assignments</Link>
+            <Link className="button-link" to="/teachers" style={navButtonBase}>Teachers</Link>
 
             {/* Class selector reusing awfl-web projects list */}
             <ClassSelector idToken={idToken} includeManageOption onManage={onManageClasses} hideLabel onChange={handleClassChange} />
@@ -137,20 +158,10 @@ function HeaderBar() {
               <span style={{ fontSize: 12, color: '#374151' }}>
                 {user.displayName || user.email || 'Signed in'}
               </span>
-              <button
-                onClick={signOut}
-                style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}
-              >
-                Sign out
-              </button>
+              <button onClick={signOut} style={navButtonBase}>Sign out</button>
             </>
           ) : (
-            <button
-              onClick={signIn}
-              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}
-            >
-              Sign in with Google
-            </button>
+            <button onClick={signIn} style={navButtonBase}>Sign in with Google</button>
           )}
         </div>
       </div>
@@ -173,23 +184,24 @@ function HeaderBar() {
           >
             <div className="drawer-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, borderBottom: '1px solid #e5e7eb' }}>
               <strong>Menu</strong>
-              <button ref={closeBtnRef} onClick={() => setMobileOpen(false)} aria-label="Close menu" style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>
-                ✕
-              </button>
+              <button ref={closeBtnRef} onClick={() => setMobileOpen(false)} aria-label="Close menu" style={navButtonBase}>✕</button>
             </div>
             <div className="drawer-body" style={{ display: 'grid', gap: 8, padding: 12 }}>
-              <Link to="/classes" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Classes</Link>
-              <button
-                type="button"
-                onClick={onLessonsClick}
+              <Link to="/classes" onClick={() => setMobileOpen(false)} style={navButtonBase}>Classes</Link>
+              <Link
+                to={lessonsHref}
                 aria-disabled={lessonsDisabled || undefined}
                 title={lessonsDisabled ? 'Select a class to view lessons' : 'Open lessons'}
-                style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: lessonsDisabled ? '#f9fafb' : 'white', color: lessonsDisabled ? '#9ca3af' : 'inherit', cursor: lessonsDisabled ? 'not-allowed' : 'pointer' }}
+                style={lessonsDisabled ? navButtonDisabled : navButtonBase}
+                onClick={(e) => {
+                  if (lessonsDisabled) e.preventDefault()
+                  else setMobileOpen(false)
+                }}
               >
                 Lessons
-              </button>
-              <Link to="/assignments" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Assignments</Link>
-              <Link to="/teachers" onClick={() => setMobileOpen(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Teachers</Link>
+              </Link>
+              <Link to="/assignments" onClick={() => setMobileOpen(false)} style={navButtonBase}>Assignments</Link>
+              <Link to="/teachers" onClick={() => setMobileOpen(false)} style={navButtonBase}>Teachers</Link>
 
               <div>
                 <ClassSelector idToken={idToken} label="Class" includeManageOption onManage={onManageClasses} onChange={handleClassChange} style={{ marginTop: 8 }} />
