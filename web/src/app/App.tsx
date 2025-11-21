@@ -10,6 +10,7 @@ import { ClassesPage } from '../pages/Classes'
 import { ClassLessonsPage } from '../pages/ClassLessons'
 import { TeachersPage } from '../pages/Teachers'
 import { AssignmentsPage } from '../pages/Assignments'
+import { DocumentsPage } from '../pages/DocumentsPage'
 import { useAuth } from '../features/auth/public'
 import { getSelectedClassId } from '../features/classes/public'
 
@@ -23,7 +24,7 @@ function HeaderBar() {
 
   const [selectedClassId, setSelectedClassIdState] = useState<string>(() => getSelectedClassId())
   useEffect(() => {
-    // Re-sync selected class on route changes (e.g., when visiting a lessons route directly)
+    // Re-sync selected class on route changes (e.g., when visiting a lessons/documents route directly)
     setSelectedClassIdState(getSelectedClassId())
   }, [loc.pathname])
 
@@ -86,12 +87,15 @@ function HeaderBar() {
   }
 
   // When class changes from the selector, keep the current context.
-  // If user is on a lessons route, navigate to the new class's lessons LIST (no auto-open).
+  // If user is on a lessons or documents route, navigate to the new class's route.
   const handleClassChange = (nextId: string) => {
     setSelectedClassIdState(nextId)
     const isLessonsRoute = /^\/classes\/[^/]+\/lessons(\/[^/]+)?$/.test(loc.pathname)
+    const isDocumentsRoute = /^\/(classes\/[^/]+\/documents|documents)$/.test(loc.pathname)
     if (isLessonsRoute) {
       navigate(`/classes/${encodeURIComponent(nextId)}/lessons`)
+    } else if (isDocumentsRoute) {
+      navigate(`/classes/${encodeURIComponent(nextId)}/documents`)
     }
     // Close mobile drawer if open
     if (mobileOpen) setMobileOpen(false)
@@ -100,6 +104,8 @@ function HeaderBar() {
   const lessonsDisabled = !selectedClassId
   const currentCid = getSelectedClassId() || selectedClassId
   const lessonsHref = currentCid ? `/classes/${encodeURIComponent(currentCid)}/lessons` : '/classes'
+  const documentsDisabled = !currentCid
+  const documentsHref = currentCid ? `/classes/${encodeURIComponent(currentCid)}/documents` : '/classes'
 
   return (
     <header className="header" role="banner" style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -138,6 +144,18 @@ function HeaderBar() {
               }}
             >
               Lessons
+            </Link>
+            <Link
+              className="button-link"
+              to={documentsHref}
+              aria-disabled={documentsDisabled || undefined}
+              title={documentsDisabled ? 'Select a class to view documents' : 'Open documents'}
+              style={documentsDisabled ? navButtonDisabled : navButtonBase}
+              onClick={(e) => {
+                if (documentsDisabled) e.preventDefault()
+              }}
+            >
+              Documents
             </Link>
             <Link className="button-link" to="/assignments" style={navButtonBase}>Assignments</Link>
             <Link className="button-link" to="/teachers" style={navButtonBase}>Teachers</Link>
@@ -200,6 +218,18 @@ function HeaderBar() {
               >
                 Lessons
               </Link>
+              <Link
+                to={documentsHref}
+                aria-disabled={documentsDisabled || undefined}
+                title={documentsDisabled ? 'Select a class to view documents' : 'Open documents'}
+                style={documentsDisabled ? navButtonDisabled : navButtonBase}
+                onClick={(e) => {
+                  if (documentsDisabled) e.preventDefault()
+                  else setMobileOpen(false)
+                }}
+              >
+                Documents
+              </Link>
               <Link to="/assignments" onClick={() => setMobileOpen(false)} style={navButtonBase}>Assignments</Link>
               <Link to="/teachers" onClick={() => setMobileOpen(false)} style={navButtonBase}>Teachers</Link>
 
@@ -237,6 +267,8 @@ function AppInner() {
           <Route path="/teachers" element={<TeachersPage />} />
           <Route path="/classes/:classId/lessons" element={<ClassLessonsPage />} />
           <Route path="/classes/:classId/lessons/:sessionId" element={<ClassLessonsPage />} />
+          <Route path="/classes/:classId/documents" element={<DocumentsPage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/:docId" element={<CornerstoneDetail />} />
           <Route path="*" element={<div>Not Found</div>} />
         </Routes>

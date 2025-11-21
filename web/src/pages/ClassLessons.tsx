@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/public'
 import { setSelectedClassId, useClassesList } from '../features/classes/public'
@@ -168,14 +168,34 @@ export function ClassLessonsPage() {
 
   const assignmentsRef = useRef<HTMLDivElement | null>(null)
   const assignmentsHomeRef = useRef<HTMLDivElement | null>(null)
-  useScrollHome({
-    containerRef: assignmentsRef,
-    anchorRef: assignmentsHomeRef,
-    itemCount: (lessonAssignments.sessionTasks || []).length,
-    home: 'top',
-    enabled: !!selectedId && showingAssignments,
-    key: `${selectedId || ''}:${lessonAssignments.activeAssignmentStatus || ''}`,
-  })
+  // Disable auto-scroll for assignments to prevent page jumping on pill toggles
+  // We still render an anchor with scroll-margin-top to avoid sticky-header overlap if scrolled programmatically elsewhere.
+  // If we later want to re-enable, key should NOT include status.
+  // useScrollHome({
+  //   containerRef: assignmentsRef,
+  //   anchorRef: assignmentsHomeRef,
+  //   itemCount: (lessonAssignments.sessionTasks || []).length,
+  //   home: 'top',
+  //   enabled: !!selectedId && showingAssignments,
+  //   key: selectedId || undefined,
+  // })
+
+  // Prevent page jump on toggling messages <-> assignments AND on status changes by restoring window scroll
+  const lastViewKeyRef = useRef<string | null>(null)
+  useLayoutEffect(() => {
+    const viewKey = showingAssignments ? `assign:${lessonAssignments.activeAssignmentStatus || ''}` : 'messages'
+    if (lastViewKeyRef.current && lastViewKeyRef.current !== viewKey) {
+      const x = window.scrollX
+      const y = window.scrollY
+      // Restore in the next frame after DOM changes
+      requestAnimationFrame(() => window.scrollTo(x, y))
+    }
+    lastViewKeyRef.current = viewKey
+  }, [showingAssignments, lessonAssignments.activeAssignmentStatus])
+
+  // Ensure window doesn't steal scroll when switching to assignments. Keep the
+  // app header from covering the first row by adding a scroll-margin on the top anchor.
+  const anchorTopStyle: React.CSSProperties = { height: 1, overflowAnchor: 'none' as any, scrollMarginTop: 56 }
 
   if (selectedId) {
     const title = selected ? (selected.title && selected.title.trim().length > 0 ? selected.title : selected.id) : selectedId
@@ -263,7 +283,7 @@ export function ClassLessonsPage() {
 
             {/* Scrollable middle area: messages OR assignments list */}
             {!showingAssignments ? (
-              <div ref={messagesRef} className="lesson-messages yoj-theme">
+              <div ref={messagesRef} className="lesson-messages yoj-theme" style={{ overflowAnchor: 'none' as any }}>
                 <YojMessageList
                   messages={messages as any}
                   sessionId={selectedId || undefined}
@@ -275,9 +295,9 @@ export function ClassLessonsPage() {
                 <div ref={messagesHomeRef} aria-hidden="true" style={{ height: 1, overflowAnchor: 'none' as any }} />
               </div>
             ) : (
-              <div ref={assignmentsRef} className="lesson-messages" style={{ padding: 8 }}>
-                {/* Top anchor for reliable scrollIntoView */}
-                <div ref={assignmentsHomeRef} aria-hidden="true" style={{ height: 1, overflowAnchor: 'none' as any }} />
+              <div ref={assignmentsRef} className="lesson-messages" style={{ padding: 8, overflowAnchor: 'none' as any }}>
+                {/* Top anchor for reliable scrollIntoView; add scroll-margin to avoid sticky header overlap */}
+                <div ref={assignmentsHomeRef} aria-hidden="true" style={anchorTopStyle} />
                 <ul className="grid-cards" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                   {(lessonAssignments.sessionTasks || []).map((t: any) => (
                     <li key={t.id}>
@@ -331,7 +351,7 @@ export function ClassLessonsPage() {
           <AssignmentModal
             open={lessonAssignments.assignmentModalOpen}
             mode={lessonAssignments.assignmentModalMode as any}
-            task={lessonAssignments.editingAssignment as any}
+            initial={lessonAssignments.editingAssignment as any}
             onClose={lessonAssignments.closeAssignmentModal}
             onSave={async (input: any) => {
               await lessonAssignments.handleSaveAssignment(input)
