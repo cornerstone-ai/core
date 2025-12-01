@@ -357,7 +357,6 @@ export function ClassLessonsPage() {
               await lessonAssignments.handleSaveAssignment(input)
               await lessonAssignments.reloadAssignments()
             }}
-            onDelete={lessonAssignments.handleDeleteAssignment as any}
           />
         </div>
       </div>

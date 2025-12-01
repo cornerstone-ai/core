@@ -51,7 +51,7 @@ function HeaderBar() {
     pointerEvents: 'none',
   }
 
-  // Responsive breakpoint for mobile UI elements (hamburger, drawer)
+  // Responsive breakpoint for mobile UI elements (drawer behavior)
   const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && 'matchMedia' in window ? window.matchMedia('(max-width: 768px)').matches : false)
   useEffect(() => {
     if (typeof window === 'undefined' || !('matchMedia' in window)) return
@@ -91,7 +91,7 @@ function HeaderBar() {
   const handleClassChange = (nextId: string) => {
     setSelectedClassIdState(nextId)
     const isLessonsRoute = /^\/classes\/[^/]+\/lessons(\/[^/]+)?$/.test(loc.pathname)
-    const isDocumentsRoute = /^\/(classes\/[^/]+\/documents|documents)$/.test(loc.pathname)
+    const isDocumentsRoute = /^(\/classes\/[^/]+\/documents|\/documents)$/.test(loc.pathname)
     if (isLessonsRoute) {
       navigate(`/classes/${encodeURIComponent(nextId)}/lessons`)
     } else if (isDocumentsRoute) {
@@ -110,24 +110,14 @@ function HeaderBar() {
   return (
     <header className="header" role="banner" style={{ borderBottom: '1px solid #e5e7eb' }}>
       <div className="header-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '6px 10px' }}>
-        {/* Left cluster: brand + (mobile hamburger) + primary nav incl. class selector */}
+        {/* Left cluster: brand + primary nav incl. class selector */}
         <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-          {isMobile && (
-            <button
-              className="app-hamburger"
-              aria-label="Open menu"
-              aria-controls="cs-mobile-menu"
-              aria-expanded={mobileOpen || undefined}
-              onClick={() => setMobileOpen(true)}
-              style={navButtonBase}
-            >
-              ☰
-            </button>
-          )}
-
           {/* Brand */}
           <div className="brand" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <Link to="/" style={{ textDecoration: 'none', color: 'inherit', fontWeight: 700 }}>Cornerstone</Link>
+            <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <img src="/cornerstone-mark.svg" alt="" aria-hidden="true" style={{ width: 20, height: 20, display: 'block' }} />
+              <span style={{ fontWeight: 700 }}>Cornerstone</span>
+            </Link>
           </div>
 
           {/* Left nav */}
@@ -169,22 +159,42 @@ function HeaderBar() {
         <div className="tools" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <MusicToggle />
           <ThemeSelector />
-          {loading ? (
-            <span style={{ fontSize: 12, color: '#6b7280' }}>Auth…</span>
-          ) : user ? (
-            <>
-              <span style={{ fontSize: 12, color: '#374151' }}>
-                {user.displayName || user.email || 'Signed in'}
-              </span>
-              <button onClick={signOut} style={navButtonBase}>Sign out</button>
-            </>
+
+          {/* Desktop auth summary or mobile menu trigger */}
+          {isMobile ? (
+            <button
+              className="app-hamburger"
+              aria-label="Open menu"
+              aria-controls="cs-mobile-menu"
+              aria-expanded={mobileOpen || undefined}
+              onClick={() => setMobileOpen(true)}
+              style={navButtonBase}
+            >
+              ☰
+            </button>
           ) : (
-            <button onClick={signIn} style={navButtonBase}>Sign in with Google</button>
+            <div className="auth-desktop" style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+              {loading ? (
+                <span style={{ fontSize: 12, color: '#6b7280' }}>Auth…</span>
+              ) : user ? (
+                <>
+                  <span
+                    title={user.displayName || user.email || undefined}
+                    style={{ fontSize: 12, color: '#374151', maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  >
+                    {user.displayName || user.email || 'Signed in'}
+                  </span>
+                  <button onClick={() => signOut()} style={navButtonBase}>Sign out</button>
+                </>
+              ) : (
+                <button onClick={() => signIn()} style={navButtonBase}>Sign in with Google</button>
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      {/* Mobile drawer menu */}
+      {/* Drawer menu (used on both mobile and desktop as a simple right panel) */}
       {mobileOpen && (
         <>
           <div
@@ -204,7 +214,9 @@ function HeaderBar() {
               <strong>Menu</strong>
               <button ref={closeBtnRef} onClick={() => setMobileOpen(false)} aria-label="Close menu" style={navButtonBase}>✕</button>
             </div>
-            <div className="drawer-body" style={{ display: 'grid', gap: 8, padding: 12 }}>
+
+            {/* Scrollable body with nav and tools */}
+            <div className="drawer-body" style={{ display: 'grid', gap: 8, padding: 12, flex: 1, overflow: 'auto' }}>
               <Link to="/classes" onClick={() => setMobileOpen(false)} style={navButtonBase}>Classes</Link>
               <Link
                 to={lessonsHref}
@@ -241,6 +253,22 @@ function HeaderBar() {
                 <MusicToggle />
                 <ThemeSelector />
               </div>
+            </div>
+
+            {/* Footer pinned to bottom: auth controls */}
+            <div className="drawer-footer" style={{ borderTop: '1px solid #e5e7eb', padding: 12 }}>
+              {loading ? (
+                <span style={{ fontSize: 12, color: '#6b7280' }}>Auth…</span>
+              ) : user ? (
+                <div style={{ display: 'grid', gap: 6 }}>
+                  <div style={{ fontSize: 12, color: '#374151' }}>
+                    {user.displayName || user.email || 'Signed in'}
+                  </div>
+                  <button onClick={() => { signOut(); setMobileOpen(false) }} style={navButtonBase}>Sign out</button>
+                </div>
+              ) : (
+                <button onClick={() => { signIn(); setMobileOpen(false) }} style={navButtonBase}>Sign in with Google</button>
+              )}
             </div>
           </div>
         </>

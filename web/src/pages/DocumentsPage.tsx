@@ -30,12 +30,14 @@ export function DocumentsPage() {
   }, [loc.pathname, routeClassId])
 
   const enabled = !!effectiveClassId && !!idToken
-  const { loading, error, data } = useClassFiles({ classId: effectiveClassId, idToken, path: '.', enabled })
+  const { loading, error, data, reload } = useClassFiles({ classId: effectiveClassId, idToken, path: '.', enabled })
 
   if (!effectiveClassId) {
     return (
-      <div style={{ padding: 16 }}>
-        <h2 style={{ margin: '8px 0' }}>Documents</h2>
+      <div className="page-scroll">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h1 style={{ margin: 0, fontSize: 22 }}>Documents</h1>
+        </div>
         <p style={{ color: '#6b7280' }}>Select a class to view its documents.</p>
         <div style={{ marginTop: 8 }}>
           <Link to="/classes" style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6, textDecoration: 'none', background: 'white', color: 'inherit' }}>
@@ -48,8 +50,13 @@ export function DocumentsPage() {
 
   if (authLoading || loading) {
     return (
-      <div style={{ padding: 16 }}>
-        <h2 style={{ margin: '8px 0' }}>Documents</h2>
+      <div className="page-scroll">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h1 style={{ margin: 0, fontSize: 22 }}>Documents</h1>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button disabled className="btn btn-secondary" style={{ padding: '8px 12px' }}>Refresh</button>
+          </div>
+        </div>
         <div style={{ color: '#6b7280' }}>Loading…</div>
       </div>
     )
@@ -57,18 +64,31 @@ export function DocumentsPage() {
 
   if (error) {
     return (
-      <div style={{ padding: 16 }}>
-        <h2 style={{ margin: '8px 0' }}>Documents</h2>
-        <div role="alert" style={{ color: '#b91c1c' }}>Failed to load: {error}</div>
+      <div className="page-scroll">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h1 style={{ margin: 0, fontSize: 22 }}>Documents</h1>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={reload} className="btn btn-secondary" style={{ padding: '8px 12px' }}>Refresh</button>
+          </div>
+        </div>
+        <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginBottom: 12 }}>
+          {error}
+        </div>
       </div>
     )
   }
 
-  const items = (data as any)?.entries || []
+  // useFsList returns FsListResult { path, items }
+  const items = (data as any)?.items || []
 
   return (
-    <div style={{ padding: 16 }}>
-      <h2 style={{ margin: '8px 0' }}>Documents</h2>
+    <div className="page-scroll">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <h1 style={{ margin: 0, fontSize: 22 }}>Documents</h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={reload} className="btn btn-secondary" style={{ padding: '8px 12px' }}>Refresh</button>
+        </div>
+      </div>
       <DocumentsGrid items={items} />
     </div>
   )

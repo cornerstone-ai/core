@@ -4,10 +4,25 @@ export { useProjectsList as useClassesList } from '@awfl-web/features/projects/p
 export type { Project as Class } from '@awfl-web/features/projects/public'
 
 // Map project selection helpers to class-named exports
-export {
-  getSelectedProjectId as getSelectedClassId,
-  setSelectedProjectId as setSelectedClassId,
-} from '@awfl-web/features/projects/public'
+import { getSelectedProjectId, setSelectedProjectId } from '@awfl-web/features/projects/public'
+
+export { getSelectedProjectId as getSelectedClassId }
+
+// Wrap setter to broadcast selection changes within this app
+export function setSelectedClassId(id?: string | null): void {
+  try {
+    setSelectedProjectId(id as any)
+  } finally {
+    try {
+      if (typeof window !== 'undefined' && 'dispatchEvent' in window) {
+        const detail = { id: id ?? '' }
+        window.dispatchEvent(new CustomEvent('class:selected', { detail }))
+      }
+    } catch {
+      // no-op: event dispatch best-effort
+    }
+  }
+}
 
 // Local modal wrapper customized for Classes
 export { NewClassModal } from './NewClassModal'

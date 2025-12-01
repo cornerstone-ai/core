@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Cornerstone logo">
+  <defs>
+    <linearGradient id="csGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FBCFE8"/>
+      <stop offset="0.5" stop-color="#A7F3D0"/>
+      <stop offset="1" stop-color="#93C5FD"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background tile -->
+  <rect x="2" y="2" width="60" height="60" rx="12" fill="url(#csGrad)"/>
+
+  <!-- Bottom corner vertex (inset for breathing room) -->
+  <!-- Vertex: (20, 46) -->
+
+  <!-- Depth edge (slightly less than 45°), rendered as a tapered strip pointing up-right -->
+  <!-- Built as a quad that narrows as it recedes -->
+  <path
+    d="M 17.588 42.900 L 54.794 16.450 L 57.206 19.550 L 22.412 49.100 Z"
+    fill="#1F2937"
+    opacity="0.96"
+  />
+
+  <!-- Front edges: pulled back slightly from the tile edges for visible spacing; round caps -->
+  <g stroke="#1F2937" stroke-width="6" stroke-linecap="round" fill="none">
+    <!-- Front bottom edge (rightward, short of right edge) -->
+    <path d="M20 46 L55 46"/>
+    <!-- Front vertical edge (upward, short of top edge) -->
+    <path d="M20 46 L20 9"/>
+  </g>
+</svg>

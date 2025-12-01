@@ -13,6 +13,34 @@
       "fund" : {
         "type" : "integer"
       },
+      "toolChoice" : {
+        "type" : "object",
+        "properties" : {
+          "function" : {
+            "type" : "object",
+            "properties" : {
+              "name" : {
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "name"
+            ],
+            "additionalProperties" : true
+          },
+          "type" : {
+            "type" : "string"
+          }
+        },
+        "required" : [
+          "function",
+          "type"
+        ],
+        "additionalProperties" : true
+      },
+      "sideCall" : {
+        "type" : "boolean"
+      },
       "env" : {
         "type" : "object",
         "properties" : {
@@ -58,6 +86,8 @@
       "fund",
       "spent",
       "task",
+      "toolChoice",
+      "sideCall",
       "env"
     ],
     "additionalProperties" : true,

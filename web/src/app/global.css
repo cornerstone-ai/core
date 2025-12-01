@@ -90,8 +90,8 @@ img, svg, video, canvas { max-width: 100%; height: auto; }
 @media (max-width: 767px) {
   .app-hamburger { display: inline-flex; }
   .app-nav-left { display: none !important; }
-  /* Hide brand title on mobile */
-  .brand { display: none !important; }
+  /* Show brand title on mobile as well */
+  .brand { display: inline-flex; align-items: center; gap: 8px; }
   /* Switch header layout to flex and push tools to the right */
   .header-inner { display: flex; align-items: center; gap: 8px; }
   .tools { margin-left: auto; }
@@ -296,6 +296,7 @@ input[type='file'] { font-family: inherit; }
   --yoj-cg-border: var(--subtle);
   --yoj-cg-radius: 12px;
   --yoj-cg-padding: 8px;
+
   --yoj-cg-label-color: color-mix(in srgb, var(--accent) 60%, var(--fg));
   --yoj-cg-desc-color: var(--muted);
 
