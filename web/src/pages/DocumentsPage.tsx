@@ -8,7 +8,8 @@ export function DocumentsPage() {
   const params = useParams()
   const navigate = useNavigate()
   const loc = useLocation()
-  const routeClassId = params.classId
+  const routeClassId = params.classId as string | undefined
+  const splat = (params['*'] as string | undefined) || ''
 
   const { idToken, loading: authLoading } = useAuth()
 
@@ -17,20 +18,36 @@ export function DocumentsPage() {
     return routeClassId || getSelectedClassId() || null
   }, [routeClassId])
 
-  // If we are on the generic /documents path and have a selected class, normalize URL.
+  // Derive current directory path from the URL splat (default to root '.')
+  const currentPath = useMemo(() => {
+    const raw = splat || ''
+    if (!raw) return '.'
+    // Keep slashes; decode to get original names back
+    return decodeURI(raw)
+  }, [splat])
+
+  // If we are on the generic /documents route (no classId) and have a selected class, normalize URL.
+  // Preserve any folder path carried in the splat.
   useEffect(() => {
     if (!routeClassId) {
       const cid = getSelectedClassId()
       if (cid) {
-        navigate(`/classes/${encodeURIComponent(cid)}/documents`, { replace: true })
+        const sub = splat ? `/${splat}` : ''
+        navigate(`/classes/${encodeURIComponent(cid)}/documents${sub}`, { replace: true })
       }
     }
-    // We intentionally exclude navigate from deps to avoid unwanted re-runs
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loc.pathname, routeClassId])
+  }, [loc.pathname, routeClassId, splat])
 
   const enabled = !!effectiveClassId && !!idToken
-  const { loading, error, data, reload } = useClassFiles({ classId: effectiveClassId, idToken, path: '.', enabled })
+  const { loading, error, data, reload } = useClassFiles({ classId: effectiveClassId, idToken, path: currentPath, enabled })
+
+  const docsBase = (cid: string | null) => (cid ? `/classes/${encodeURIComponent(cid)}/documents` : `/documents`)
+
+  const navigateToPath = (p: string) => {
+    const pretty = p === '.' ? '' : `/${encodeURI(p.startsWith('/') ? p.slice(1) : p)}`
+    navigate(`${docsBase(effectiveClassId)}${pretty}`)
+  }
 
   if (!effectiveClassId) {
     return (
@@ -81,15 +98,43 @@ export function DocumentsPage() {
   // useFsList returns FsListResult { path, items }
   const items = (data as any)?.items || []
 
+  const openItem = (p: string) => {
+    const entry = items.find((i: any) => i.path === p)
+    if (entry?.type === 'dir') {
+      navigateToPath(p)
+      return
+    }
+
+    // Open files in a new tab via the pretty open route
+    const prettyPath = encodeURI(p.startsWith('/') ? p.slice(1) : p)
+    const base = effectiveClassId
+      ? `/classes/${encodeURIComponent(effectiveClassId)}/documents/open/`
+      : `/documents/open/`
+    window.open(`${base}${prettyPath}`, '_blank', 'noopener,noreferrer')
+  }
+
+  const canGoUp = currentPath && currentPath !== '.'
+  const goUp = () => {
+    if (!canGoUp) return
+    const parts = currentPath.split('/').filter(Boolean)
+    parts.pop()
+    const parent = parts.length === 0 ? '.' : parts.join('/')
+    navigateToPath(parent)
+  }
+
   return (
     <div className="page-scroll">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <h1 style={{ margin: 0, fontSize: 22 }}>Documents</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ fontSize: 12, color: '#6b7280' }} title={currentPath}>
+            Path: <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: 6 }}>{currentPath}</code>
+          </div>
           <button onClick={reload} className="btn btn-secondary" style={{ padding: '8px 12px' }}>Refresh</button>
+          <button onClick={goUp} disabled={!canGoUp} className="btn btn-secondary" style={{ padding: '8px 12px' }}>Up</button>
         </div>
       </div>
-      <DocumentsGrid items={items} />
+      <DocumentsGrid items={items} onOpen={openItem} />
     </div>
   )
 }

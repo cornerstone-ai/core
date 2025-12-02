@@ -11,6 +11,7 @@ import { ClassLessonsPage } from '../pages/ClassLessons'
 import { TeachersPage } from '../pages/Teachers'
 import { AssignmentsPage } from '../pages/Assignments'
 import { DocumentsPage } from '../pages/DocumentsPage'
+import OpenDocument from '../pages/OpenDocument'
 import { useAuth } from '../features/auth/public'
 import { getSelectedClassId } from '../features/classes/public'
 
@@ -91,10 +92,12 @@ function HeaderBar() {
   const handleClassChange = (nextId: string) => {
     setSelectedClassIdState(nextId)
     const isLessonsRoute = /^\/classes\/[^/]+\/lessons(\/[^/]+)?$/.test(loc.pathname)
-    const isDocumentsRoute = /^(\/classes\/[^/]+\/documents|\/documents)$/.test(loc.pathname)
+    // Allow documents with optional subpaths
+    const isDocumentsRoute = /^(\/classes\/[^/]+\/documents(?:\/.*)?|\/documents(?:\/.*)?)$/.test(loc.pathname)
     if (isLessonsRoute) {
       navigate(`/classes/${encodeURIComponent(nextId)}/lessons`)
     } else if (isDocumentsRoute) {
+      // If currently on a documents route, reset to the new class's documents root.
       navigate(`/classes/${encodeURIComponent(nextId)}/documents`)
     }
     // Close mobile drawer if open
@@ -295,8 +298,12 @@ function AppInner() {
           <Route path="/teachers" element={<TeachersPage />} />
           <Route path="/classes/:classId/lessons" element={<ClassLessonsPage />} />
           <Route path="/classes/:classId/lessons/:sessionId" element={<ClassLessonsPage />} />
-          <Route path="/classes/:classId/documents" element={<DocumentsPage />} />
-          <Route path="/documents" element={<DocumentsPage />} />
+          {/* Documents routes with wildcard to carry folder path in the URL */}
+          <Route path="/classes/:classId/documents/*" element={<DocumentsPage />} />
+          <Route path="/documents/*" element={<DocumentsPage />} />
+          {/* Open document routes (more specific) */}
+          <Route path="/classes/:classId/documents/open/*" element={<OpenDocument />} />
+          <Route path="/documents/open/*" element={<OpenDocument />} />
           <Route path="/:docId" element={<CornerstoneDetail />} />
           <Route path="*" element={<div>Not Found</div>} />
         </Routes>

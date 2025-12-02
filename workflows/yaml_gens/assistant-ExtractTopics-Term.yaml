@@ -74,7 +74,7 @@ main:
           steps:
           - lock_switch_initResult:
               assign:
-              - lock_switchResult_4db91f25: {}
+              - lock_switchResult_6f7574b3: {}
           - lock_switch_steps:
               switch:
               - condition: "${(lock_acquire_tryResult_64d7e45e == true)}"
@@ -296,7 +296,7 @@ main:
                         steps:
                         - ista_write_switch_initResult:
                             assign:
-                            - ista_write_switchResult_1bf471fe: {}
+                            - ista_write_switchResult_652bb41f: {}
                         - ista_write_switch_steps:
                             switch:
                             - condition: "${(((len(messagesInWindowResult_5e24847c) > 0) and ((len(for_topicInfosIstaResult_58c80da3) == 0) or (for_topicInfosIstaResult_58c80da3[(len(for_topicInfosIstaResult_58c80da3) - 1)].create_time < input.segmentEnd))) == true)}"
@@ -480,7 +480,7 @@ main:
                                       steps:
                                       - complete_switch_initResult:
                                           assign:
-                                          - complete_switchResult_40916b8d: {}
+                                          - complete_switchResult_19766385: {}
                                       - complete_switch_steps:
                                           switch:
                                           - condition: "${(len(for_topicContext_items_TermKalaResult_da36737) > 0)}"
@@ -491,33 +491,44 @@ main:
                                                     steps:
                                                     - buildTopicIsta_initResult:
                                                         assign:
-                                                        - buildTopicIstaResult_4ec55d3e: []
+                                                        - buildTopicIstaResult_5a33fbc0: []
                                                     - buildTopicIsta_steps:
                                                         for:
                                                           value: "buildTopicIstaIdx"
-                                                          range: "${[0, (1 - 1)]}"
+                                                          range: "${[0, (2 - 1)]}"
                                                           steps:
                                                           - buildTopicIsta_switch:
                                                               steps:
                                                               - buildTopicIsta_switch_initResult:
                                                                   assign:
-                                                                  - buildTopicIsta_switchResult_25662746: {}
+                                                                  - buildTopicIsta_switchResult_76dd6733: {}
                                                               - buildTopicIsta_switch_steps:
                                                                   switch:
                                                                   - condition: "${(buildTopicIstaIdx == 0)}"
                                                                     steps:
                                                                     - buildTopicIsta_switch_updateResult_0:
                                                                         assign:
-                                                                        - buildTopicIsta_switchResult_25662746:
+                                                                        - buildTopicIsta_switchResult_76dd6733:
                                                                             role: "system"
-                                                                            content: "${\"Return topics discussed. Typically a conversation will include 1-3 topics. Provide these details about the topics discussed:\n - topic: The name of the topic, keeps names of known topics consistent.\n - breadth: Qualify the breadth of the discussion on this topic in detail.\n - depth: Qualify the depth of the discussion on this topic.\n - startingPoint: Where did the discussion on this topic start? (We want to map the the progression, depth and breadth accross multiple conversations over time)\n - endingPoint: Where did the converstion leave off or conclude?\n - details: Record the relevant details of the discussion on this topic.\n\n    Don't repeat information already contained in previous summaries and extracted info.\n  \"}"
+                                                                            content: "${\"Return topics discussed. Typically a conversation will include 1-3 topics. Provide these details about the topics discussed:\n - topic: The name of the topic, keeps names of known topics consistent.\n - breadth: Qualify the breadth of the discussion on this topic in detail.\n - depth: Qualify the depth of the discussion on this topic.\n - startingPoint: Where did the discussion on this topic start? (We want to map the the progression, depth and breadth accross multiple conversations over time)\n - endingPoint: Where did the converstion leave off or conclude?\n - details: Record the relevant details of the discussion on this topic.\n  \"}"
+                                                                            tool_calls: "${[]}"
+                                                                            tool_call_id: "${null}"
+                                                                            create_time: "${sys.now()}"
+                                                                            docId: "${null}"
+                                                                  - condition: "${(buildTopicIstaIdx == 1)}"
+                                                                    steps:
+                                                                    - buildTopicIsta_switch_updateResult_1:
+                                                                        assign:
+                                                                        - buildTopicIsta_switchResult_76dd6733:
+                                                                            role: "system"
+                                                                            content: "${\"Refine (or initiate) the whole term topic summary.\"}"
                                                                             tool_calls: "${[]}"
                                                                             tool_call_id: "${null}"
                                                                             create_time: "${sys.now()}"
                                                                             docId: "${null}"
                                                           - buildTopicIsta_updateResult:
                                                               assign:
-                                                              - buildTopicIstaResult_4ec55d3e: "${list.concat(buildTopicIstaResult_4ec55d3e, buildTopicIsta_switchResult_25662746)}"
+                                                              - buildTopicIstaResult_5a33fbc0: "${list.concat(buildTopicIstaResult_5a33fbc0, buildTopicIsta_switchResult_76dd6733)}"
                                                 - buildNuggetIsta:
                                                     steps:
                                                     - buildNuggetIsta_initResult:
@@ -646,47 +657,47 @@ main:
                                                     steps:
                                                     - joinTopicInfoIsta_initResult:
                                                         assign:
-                                                        - joinTopicInfoIstaResult_243ca14d: []
+                                                        - joinTopicInfoIstaResult_d01a147: []
                                                     - joinTopicInfoIsta_steps:
                                                         for:
                                                           value: "joinTopicInfoIstaIdx"
-                                                          range: "${[0, ((((((0 + len(buildTopicIstaResult_4ec55d3e)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)) + len(buildArtifactIstaResult_199e1607)) + len(buildTopicInfoIstaResult_4758580)) - 1)]}"
+                                                          range: "${[0, ((((((0 + len(buildTopicIstaResult_5a33fbc0)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)) + len(buildArtifactIstaResult_199e1607)) + len(buildTopicInfoIstaResult_4758580)) - 1)]}"
                                                           steps:
                                                           - joinTopicInfoIsta_switch:
                                                               steps:
                                                               - joinTopicInfoIsta_switch_initResult:
                                                                   assign:
-                                                                  - joinTopicInfoIsta_switchResult_7dff7d72: {}
+                                                                  - joinTopicInfoIsta_switchResult_d721a05: {}
                                                               - joinTopicInfoIsta_switch_steps:
                                                                   switch:
-                                                                  - condition: "${(joinTopicInfoIstaIdx >= ((((0 + len(buildTopicIstaResult_4ec55d3e)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)) + len(buildArtifactIstaResult_199e1607)))}"
+                                                                  - condition: "${(joinTopicInfoIstaIdx >= ((((0 + len(buildTopicIstaResult_5a33fbc0)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)) + len(buildArtifactIstaResult_199e1607)))}"
                                                                     steps:
                                                                     - joinTopicInfoIsta_switch_updateResult_0:
                                                                         assign:
-                                                                        - joinTopicInfoIsta_switchResult_7dff7d72: "${buildTopicInfoIstaResult_4758580[(joinTopicInfoIstaIdx - ((((0 + len(buildTopicIstaResult_4ec55d3e)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)) + len(buildArtifactIstaResult_199e1607)))]}"
-                                                                  - condition: "${(joinTopicInfoIstaIdx >= (((0 + len(buildTopicIstaResult_4ec55d3e)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)))}"
+                                                                        - joinTopicInfoIsta_switchResult_d721a05: "${buildTopicInfoIstaResult_4758580[(joinTopicInfoIstaIdx - ((((0 + len(buildTopicIstaResult_5a33fbc0)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)) + len(buildArtifactIstaResult_199e1607)))]}"
+                                                                  - condition: "${(joinTopicInfoIstaIdx >= (((0 + len(buildTopicIstaResult_5a33fbc0)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)))}"
                                                                     steps:
                                                                     - joinTopicInfoIsta_switch_updateResult_1:
                                                                         assign:
-                                                                        - joinTopicInfoIsta_switchResult_7dff7d72: "${buildArtifactIstaResult_199e1607[(joinTopicInfoIstaIdx - (((0 + len(buildTopicIstaResult_4ec55d3e)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)))]}"
-                                                                  - condition: "${(joinTopicInfoIstaIdx >= ((0 + len(buildTopicIstaResult_4ec55d3e)) + len(buildNuggetIstaResult_3ee10c4a)))}"
+                                                                        - joinTopicInfoIsta_switchResult_d721a05: "${buildArtifactIstaResult_199e1607[(joinTopicInfoIstaIdx - (((0 + len(buildTopicIstaResult_5a33fbc0)) + len(buildNuggetIstaResult_3ee10c4a)) + len(buildRelfectionIstaResult_359aeb00)))]}"
+                                                                  - condition: "${(joinTopicInfoIstaIdx >= ((0 + len(buildTopicIstaResult_5a33fbc0)) + len(buildNuggetIstaResult_3ee10c4a)))}"
                                                                     steps:
                                                                     - joinTopicInfoIsta_switch_updateResult_2:
                                                                         assign:
-                                                                        - joinTopicInfoIsta_switchResult_7dff7d72: "${buildRelfectionIstaResult_359aeb00[(joinTopicInfoIstaIdx - ((0 + len(buildTopicIstaResult_4ec55d3e)) + len(buildNuggetIstaResult_3ee10c4a)))]}"
-                                                                  - condition: "${(joinTopicInfoIstaIdx >= (0 + len(buildTopicIstaResult_4ec55d3e)))}"
+                                                                        - joinTopicInfoIsta_switchResult_d721a05: "${buildRelfectionIstaResult_359aeb00[(joinTopicInfoIstaIdx - ((0 + len(buildTopicIstaResult_5a33fbc0)) + len(buildNuggetIstaResult_3ee10c4a)))]}"
+                                                                  - condition: "${(joinTopicInfoIstaIdx >= (0 + len(buildTopicIstaResult_5a33fbc0)))}"
                                                                     steps:
                                                                     - joinTopicInfoIsta_switch_updateResult_3:
                                                                         assign:
-                                                                        - joinTopicInfoIsta_switchResult_7dff7d72: "${buildNuggetIstaResult_3ee10c4a[(joinTopicInfoIstaIdx - (0 + len(buildTopicIstaResult_4ec55d3e)))]}"
+                                                                        - joinTopicInfoIsta_switchResult_d721a05: "${buildNuggetIstaResult_3ee10c4a[(joinTopicInfoIstaIdx - (0 + len(buildTopicIstaResult_5a33fbc0)))]}"
                                                                   - condition: "${(joinTopicInfoIstaIdx >= 0)}"
                                                                     steps:
                                                                     - joinTopicInfoIsta_switch_updateResult_4:
                                                                         assign:
-                                                                        - joinTopicInfoIsta_switchResult_7dff7d72: "${buildTopicIstaResult_4ec55d3e[(joinTopicInfoIstaIdx - 0)]}"
+                                                                        - joinTopicInfoIsta_switchResult_d721a05: "${buildTopicIstaResult_5a33fbc0[(joinTopicInfoIstaIdx - 0)]}"
                                                           - joinTopicInfoIsta_updateResult:
                                                               assign:
-                                                              - joinTopicInfoIstaResult_243ca14d: "${list.concat(joinTopicInfoIstaResult_243ca14d, joinTopicInfoIsta_switchResult_7dff7d72)}"
+                                                              - joinTopicInfoIstaResult_d01a147: "${list.concat(joinTopicInfoIstaResult_d01a147, joinTopicInfoIsta_switchResult_d721a05)}"
                                             - buildPrompt:
                                                 steps:
                                                 - buildPrompt_initResult:
@@ -722,37 +733,37 @@ main:
                                                 steps:
                                                 - complete_joinMessages_initResult:
                                                     assign:
-                                                    - complete_joinMessagesResult_5c725b38: []
+                                                    - complete_joinMessagesResult_136331ca: []
                                                 - complete_joinMessages_steps:
                                                     for:
                                                       value: "complete_joinMessagesIdx"
-                                                      range: "${[0, ((((0 + len(buildPromptResult_20cdcf32)) + len(for_topicContext_items_TermKalaResult_da36737)) + len(joinTopicInfoIstaResult_243ca14d)) - 1)]}"
+                                                      range: "${[0, ((((0 + len(buildPromptResult_20cdcf32)) + len(for_topicContext_items_TermKalaResult_da36737)) + len(joinTopicInfoIstaResult_d01a147)) - 1)]}"
                                                       steps:
                                                       - complete_joinMessages_switch:
                                                           steps:
                                                           - complete_joinMessages_switch_initResult:
                                                               assign:
-                                                              - complete_joinMessages_switchResult_906089c: {}
+                                                              - complete_joinMessages_switchResult_19f65d5e: {}
                                                           - complete_joinMessages_switch_steps:
                                                               switch:
                                                               - condition: "${(complete_joinMessagesIdx >= ((0 + len(buildPromptResult_20cdcf32)) + len(for_topicContext_items_TermKalaResult_da36737)))}"
                                                                 steps:
                                                                 - complete_joinMessages_switch_updateResult_0:
                                                                     assign:
-                                                                    - complete_joinMessages_switchResult_906089c: "${joinTopicInfoIstaResult_243ca14d[(complete_joinMessagesIdx - ((0 + len(buildPromptResult_20cdcf32)) + len(for_topicContext_items_TermKalaResult_da36737)))]}"
+                                                                    - complete_joinMessages_switchResult_19f65d5e: "${joinTopicInfoIstaResult_d01a147[(complete_joinMessagesIdx - ((0 + len(buildPromptResult_20cdcf32)) + len(for_topicContext_items_TermKalaResult_da36737)))]}"
                                                               - condition: "${(complete_joinMessagesIdx >= (0 + len(buildPromptResult_20cdcf32)))}"
                                                                 steps:
                                                                 - complete_joinMessages_switch_updateResult_1:
                                                                     assign:
-                                                                    - complete_joinMessages_switchResult_906089c: "${for_topicContext_items_TermKalaResult_da36737[(complete_joinMessagesIdx - (0 + len(buildPromptResult_20cdcf32)))]}"
+                                                                    - complete_joinMessages_switchResult_19f65d5e: "${for_topicContext_items_TermKalaResult_da36737[(complete_joinMessagesIdx - (0 + len(buildPromptResult_20cdcf32)))]}"
                                                               - condition: "${(complete_joinMessagesIdx >= 0)}"
                                                                 steps:
                                                                 - complete_joinMessages_switch_updateResult_2:
                                                                     assign:
-                                                                    - complete_joinMessages_switchResult_906089c: "${buildPromptResult_20cdcf32[(complete_joinMessagesIdx - 0)]}"
+                                                                    - complete_joinMessages_switchResult_19f65d5e: "${buildPromptResult_20cdcf32[(complete_joinMessagesIdx - 0)]}"
                                                       - complete_joinMessages_updateResult:
                                                           assign:
-                                                          - complete_joinMessagesResult_5c725b38: "${list.concat(complete_joinMessagesResult_5c725b38, complete_joinMessages_switchResult_906089c)}"
+                                                          - complete_joinMessagesResult_136331ca: "${list.concat(complete_joinMessagesResult_136331ca, complete_joinMessages_switchResult_19f65d5e)}"
                                             - complete_chat_block:
                                                 steps:
                                                 - complete_chat_buildSchemaList:
@@ -794,7 +805,7 @@ main:
                                                           args:
                                                             url: "${((input.env.BASE_URL + \"/\") + \"llm/chat\")}"
                                                             body:
-                                                              messages: "${list.concat(complete_joinMessagesResult_5c725b38, complete_chat_buildSchemaListResult_6acaa0ed[0])}"
+                                                              messages: "${list.concat(complete_joinMessagesResult_136331ca, complete_chat_buildSchemaListResult_6acaa0ed[0])}"
                                                               model: "${\"gpt-5\"}"
                                                               temperature: 0.8
                                                               max_completion_tokens: "${null}"
@@ -808,13 +819,13 @@ main:
                                                             headers:
                                                               x-user-id: "${input.env.userId}"
                                                               x-project-id: "${input.env.projectId}"
-                                                          result: "complete_chat_postResult_3639a649"
+                                                          result: "complete_chat_postResult_11aecce"
                                                     retry: "${http.default_retry}"
                                             - complete_switch_updateResult_0:
                                                 assign:
-                                                - complete_switchResult_40916b8d:
-                                                    result: "${json.decode(complete_chat_postResult_3639a649.body.message.content)}"
-                                                    total_cost: "${complete_chat_postResult_3639a649.body.total_cost}"
+                                                - complete_switchResult_19766385:
+                                                    result: "${json.decode(complete_chat_postResult_11aecce.body.message.content)}"
+                                                    total_cost: "${complete_chat_postResult_11aecce.body.total_cost}"
                                           - condition: "${true}"
                                             steps:
                                             - emptyYoj:
@@ -823,17 +834,17 @@ main:
                                                   code: "${400}"
                                             - complete_switch_updateResult_1:
                                                 assign:
-                                                - complete_switchResult_40916b8d: "${null}"
+                                                - complete_switchResult_19766385: "${null}"
                               - do_write_other_block:
                                   steps:
                                   - writeIstaResult_switch:
                                       steps:
                                       - writeIstaResult_switch_initResult:
                                           assign:
-                                          - writeIstaResult_switchResult_2c88eb39: {}
+                                          - writeIstaResult_switchResult_28ce18c: {}
                                       - writeIstaResult_switch_steps:
                                           switch:
-                                          - condition: "${(complete_switchResult_40916b8d.result != null)}"
+                                          - condition: "${(complete_switchResult_19766385.result != null)}"
                                             steps:
                                             - writeIstaResult_write_topicInfosIsta_TermKala:
                                                 try:
@@ -846,9 +857,9 @@ main:
                                                           collection: "${(\"log.terms.\" + \"topicInfos\")}"
                                                           id: "${time.format((0 + ((((input.segmentEnd - 0) // 7888984.6104) + 1) * 7888984.6104)), \"America/New_York\")}"
                                                           contents:
-                                                            value: "${complete_switchResult_40916b8d.result}"
+                                                            value: "${complete_switchResult_19766385.result}"
                                                             create_time: "${input.segmentEnd}"
-                                                            cost: "${complete_switchResult_40916b8d.total_cost}"
+                                                            cost: "${complete_switchResult_19766385.total_cost}"
                                                             execId: "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
                                                           userId: "${input.env.userId}"
                                                         auth:
@@ -857,19 +868,19 @@ main:
                                                         headers:
                                                           x-user-id: "${input.env.userId}"
                                                           x-project-id: "${input.env.projectId}"
-                                                      result: "writeIstaResult_write_topicInfosIsta_TermKalaResult_3cd0ca77"
+                                                      result: "writeIstaResult_write_topicInfosIsta_TermKalaResult_3166feee"
                                                 retry: "${http.default_retry}"
                                             - writeIstaResult_switch_updateResult_0:
                                                 assign:
-                                                - writeIstaResult_switchResult_2c88eb39: "${writeIstaResult_write_topicInfosIsta_TermKalaResult_3cd0ca77}"
+                                                - writeIstaResult_switchResult_28ce18c: "${writeIstaResult_write_topicInfosIsta_TermKalaResult_3166feee}"
                                           - condition: "${true}"
                                             steps:
                                             - writeIstaResult_switch_updateResult_1:
                                                 assign:
-                                                - writeIstaResult_switchResult_2c88eb39: "${null}"
+                                                - writeIstaResult_switchResult_28ce18c: "${null}"
                               - ista_write_switch_updateResult_0:
                                   assign:
-                                  - ista_write_switchResult_1bf471fe: "${complete_switchResult_40916b8d.result}"
+                                  - ista_write_switchResult_652bb41f: "${complete_switchResult_19766385.result}"
                             - condition: "${true}"
                               steps:
                               - write_skipped:
@@ -883,7 +894,7 @@ main:
                                   retry: "${http.default_retry}"
                               - ista_write_switch_updateResult_1:
                                   assign:
-                                  - ista_write_switchResult_1bf471fe: "${null}"
+                                  - ista_write_switchResult_652bb41f: "${null}"
                 - lock_release:
                     try:
                       steps:
@@ -906,11 +917,11 @@ main:
                     retry: "${http.default_retry}"
                 - lock_switch_updateResult_0:
                     assign:
-                    - lock_switchResult_4db91f25: "${ista_write_switchResult_1bf471fe}"
+                    - lock_switchResult_6f7574b3: "${ista_write_switchResult_652bb41f}"
               - condition: "${true}"
                 steps:
                 - lock_switch_updateResult_1:
                     assign:
-                    - lock_switchResult_4db91f25: "${null}"
+                    - lock_switchResult_6f7574b3: "${null}"
   - return:
-      return: "${lock_switchResult_4db91f25}"
+      return: "${lock_switchResult_6f7574b3}"

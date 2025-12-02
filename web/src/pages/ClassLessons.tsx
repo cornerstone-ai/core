@@ -154,6 +154,24 @@ export function ClassLessonsPage() {
     intervalMs: 1000,
   })
 
+  // Extract exec status error (if present) and expose as a dismissible alert
+  const execStatusErrorRaw = (awx as any)?.status?.error
+  const execStatusError: string | null = useMemo(() => {
+    if (!execStatusErrorRaw) return null
+    if (typeof execStatusErrorRaw === 'string') return execStatusErrorRaw
+    if (typeof execStatusErrorRaw?.message === 'string' && execStatusErrorRaw.message.length > 0) return execStatusErrorRaw.message
+    try {
+      return JSON.stringify(execStatusErrorRaw)
+    } catch {
+      return String(execStatusErrorRaw)
+    }
+  }, [execStatusErrorRaw])
+  const [dismissedExecStatusError, setDismissedExecStatusError] = useState(false)
+  // Reset dismissal when a new error appears/changes
+  useEffect(() => {
+    setDismissedExecStatusError(false)
+  }, [execStatusError])
+
   // Autoscroll management
   const messagesRef = useRef<HTMLDivElement | null>(null)
   const messagesHomeRef = useRef<HTMLDivElement | null>(null)
@@ -272,9 +290,40 @@ export function ClassLessonsPage() {
                       {execError}
                     </div>
                   )}
-                  {awx?.error && (
+                  {(awx as any)?.error && (
                     <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                      {String(awx.error)}
+                      {String((awx as any).error)}
+                    </div>
+                  )}
+                  {/* New: Surface exec status error when present, with dismiss + optional retry */}
+                  {execStatusError && !dismissedExecStatusError && (
+                    <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4, display: 'flex', alignItems: 'flex-start', gap: 8, justifyContent: 'space-between' }}>
+                      <div style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{execStatusError}</div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {(awx as any)?.retry && (
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={async () => {
+                              try {
+                                await (awx as any).retry()
+                              } finally {
+                                setDismissedExecStatusError(true)
+                              }
+                            }}
+                          >
+                            Retry
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => setDismissedExecStatusError(true)}
+                          aria-label="Dismiss error"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
                     </div>
                   )}
                 </>
@@ -321,13 +370,17 @@ export function ClassLessonsPage() {
             {!showingAssignments && (
               <div className="lesson-footer prompt-plain">
                 <PromptInput
-                  placeholder={awx?.workflowName ? `Trigger workflow ${awx.workflowName}…` : 'Type a prompt and press Enter…'}
+                  placeholder={
+                    awx?.canExecute
+                      ? (awx?.workflowName ? `Trigger workflow ${awx.workflowName}…` : 'Type a prompt and press Enter…')
+                      : (awx?.agentsLoading ? 'Loading agents…' : 'Select an agent/workflow to enable execution…')
+                  }
                   status={awx?.status}
                   running={awx?.running}
                   submitting={submitting}
                   onSubmit={handlePromptSubmit}
                   onStop={handleStop}
-                  disabled={!selectedId}
+                  disabled={!selectedId || !awx?.canExecute || awx?.agentsLoading}
                 />
               </div>
             )}
