@@ -41,6 +41,10 @@ function base64ToBytes(b64: string): Uint8Array {
   }
 }
 
+function isUint8Array(v: unknown): v is Uint8Array {
+  return typeof v === 'object' && v !== null && v instanceof Uint8Array
+}
+
 export default function OpenDocument() {
   const { idToken, loading: authLoading } = useAuth()
   // For both routes: /documents/open/* and /classes/:classId/documents/open/*
@@ -105,7 +109,7 @@ export default function OpenDocument() {
             const maybe = base64ToBytes(output)
             if (maybe.length > 0) bytes = maybe
             else text = output
-          } else if (output instanceof Uint8Array) {
+          } else if (isUint8Array(output)) {
             bytes = output
           }
         }
@@ -114,9 +118,15 @@ export default function OpenDocument() {
         if (!text && (!bytes || bytes.length === 0)) throw new Error('Empty result from readFile')
 
         const mime = inferMime(filePath)
-        const blob = bytes && bytes.length > 0
-          ? new Blob([bytes], { type: mime })
-          : new Blob([text as string], { type: mime })
+        let blob: Blob
+        if (bytes && bytes.length > 0) {
+          // Copy into a fresh ArrayBuffer to satisfy BlobPart's ArrayBuffer requirement
+          const arrBuf = new ArrayBuffer(bytes.byteLength)
+          new Uint8Array(arrBuf).set(bytes)
+          blob = new Blob([arrBuf], { type: mime })
+        } else {
+          blob = new Blob([text as string], { type: mime })
+        }
         currentUrl = URL.createObjectURL(blob)
         setState({ loading: false, error: null, blobUrl: currentUrl, mime })
       } catch (e: any) {
