@@ -4,7 +4,7 @@
 project_id = "cornerstoneai-org"
 region     = "us-central1"
 
-github_repository = "cornerstone-ai/web"
+github_repository = "cornerstone-ai/core"
 
 # Service name for Cloud Run (override if you prefer a dev-specific name)
 service_name = "cornerstone-web"
