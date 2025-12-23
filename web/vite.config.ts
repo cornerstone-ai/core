@@ -5,22 +5,16 @@ import path from 'node:path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      // Allow importing awfl-web source via @awfl-web/*
-      '@awfl-web': path.resolve(__dirname, '..', 'awfl-web', 'src'),
-    },
-  },
   server: {
     // Expose dev server on LAN so phones/tablets on the same Wi‑Fi can access it
     host: true, // equivalent to --host (binds to 0.0.0.0)
-    port: 5174, // avoid clashing with awfl-web (commonly 5173)
+    port: 5174, // avoid clashing with other local Vite apps
     fs: {
-      // Permit serving files from the monorepo root (and thus awfl-web)
+      // Permit serving files from the monorepo root
       allow: [path.resolve(__dirname, '..')],
     },
     proxy: {
-      // Match awfl-web: proxy API calls to the local backend
+      // Proxy API calls to the local backend
       '/api': {
         target: 'http://localhost:5050',
         changeOrigin: true,

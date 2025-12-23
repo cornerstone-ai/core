@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { useProjectCreate } from '@awfl-web/features/projects/public'
-import type { Project } from '@awfl-web/features/projects/public'
+import { useProjectCreate } from '@awfl/web/features/projects/public'
+import type { Project } from '@awfl/web/features/projects/public'
 
 export type NewClassModalProps = {
   idToken?: string | null

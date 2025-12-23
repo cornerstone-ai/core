@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { makeApiClient } from '@awfl-web/api/apiClient'
-import { mapTopicInfoToSession } from '@awfl-web/features/sessions/public'
+import { makeApiClient } from '@awfl/web/api/apiClient'
+import { mapTopicInfoToSession } from '@awfl/web/features/sessions/public'
 
 export type UseLatestSessionParams = {
   projectId?: string | null

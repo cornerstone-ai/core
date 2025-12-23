@@ -30,8 +30,8 @@ export function toAssignmentStatus(status: string | null | undefined): Assignmen
 }
 
 // Hooks: thin re-exports with typed aliases
-export { useTasksList as useAssignmentsList } from '@awfl-web/features/tasks/public'
-export { TaskModal as AssignmentModal } from '@awfl-web/features/tasks/public'
+export { useTasksList as useAssignmentsList } from '@awfl/web/features/tasks/public'
+export { TaskModal as AssignmentModal } from '@awfl/web/features/tasks/public'
 
 export { useAssignmentCounts } from './useAssignmentCounts'
 export { useLessonAssignments } from './useLessonAssignments'

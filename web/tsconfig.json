@@ -14,9 +14,6 @@
     "skipLibCheck": true,
     "types": ["vite/client"],
     "baseUrl": ".",
-    "paths": {
-      "@awfl-web/*": ["../awfl-web/src/*"]
-    },
     "allowImportingTsExtensions": true
   },
   "include": ["src"]

@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import { useFsList } from '@awfl-web/features/filesystem/hooks/useFsList'
-import type { FsListResult } from '@awfl-web/features/filesystem/types'
+import { useFsList } from '@awfl/web/features/filesystem/hooks/useFsList'
+import type { FsListResult } from '@awfl/web/features/filesystem/types'
 
 export type UseClassFilesParams = {
   classId?: string | null

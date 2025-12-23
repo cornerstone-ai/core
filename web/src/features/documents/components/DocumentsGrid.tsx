@@ -1,5 +1,5 @@
 import React from 'react'
-import type { FsEntry } from '@awfl-web/features/filesystem/types'
+import type { FsEntry } from '@awfl/web/features/filesystem/types'
 
 export type DocumentsGridProps = {
   items: FsEntry[]

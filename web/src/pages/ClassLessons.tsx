@@ -10,11 +10,11 @@ import {
   getWorkflowName,
   mergeSessions,
   useNewSessionCreation,
-} from '@awfl-web/features/sessions/public'
-import { useTopicContextYoj, YojMessageList } from '@awfl-web/features/yoj/public'
-import { PromptInput } from '@awfl-web/components/public'
-import { useScrollHome } from '@awfl-web/core/public'
-import { useAgentWorkflowExecute } from '@awfl-web/features/agents/public'
+} from '@awfl/web/features/sessions/public'
+import { useTopicContextYoj, YojMessageList } from '@awfl/web/features/yoj/public'
+import { PromptInput } from '@awfl/web/components/public'
+import { useScrollHome } from '@awfl/web/core/public'
+import { useAgentWorkflowExecute } from '@awfl/web/features/agents/public'
 import { AgentModal, useAgentModalController, useSessionAgentConfig, useAgentsApi } from '../features/teachers/public'
 import { LessonTile, NewLessonModal } from '../features/lessons/public'
 import {

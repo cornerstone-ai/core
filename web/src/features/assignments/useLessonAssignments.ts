@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { useSessionTasks } from '@awfl-web/hooks/useSessionTasks'
+import { useSessionTasks } from '@awfl/web/features/tasks/hooks/useSessionTasks'
 import { toTaskStatus, toAssignmentStatus, type AssignmentStatus } from './public'
 
 // Keep types derived from the underlying hook to avoid importing internal awfl-web types

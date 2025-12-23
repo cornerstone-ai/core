@@ -1,7 +1,7 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import { useToolExec } from '@awfl-web/features/tools/useToolExec'
-import { decodeEncodedResult } from '@awfl-web/features/filesystem/parse'
+import { useToolExec } from '@awfl/web/features/tools/useToolExec'
+import { decodeEncodedResult } from '@awfl/web/features/filesystem/parse'
 import { useAuth } from '../features/auth/public'
 
 function inferMime(path: string): string {

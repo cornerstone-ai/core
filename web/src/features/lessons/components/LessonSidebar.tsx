@@ -1,4 +1,4 @@
-import type { Session as Lesson } from '@awfl-web/features/sessions/public'
+import type { Session as Lesson } from '@awfl/web/features/sessions/public'
 
 export type LessonSidebarProps = {
   lessons: Lesson[]

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useTasksCounts } from '@awfl-web/features/tasks/public'
+import { useTasksCounts } from '@awfl/web/features/tasks/public'
 
 export type AssignmentCounts = {
   assigned: number

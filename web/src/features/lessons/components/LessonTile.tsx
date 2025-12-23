@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Session } from '@awfl-web/features/sessions/public'
+import type { Session } from '@awfl/web/features/sessions/public'
 
 function formatWhen(iso?: string | null) {
   if (!iso) return ''

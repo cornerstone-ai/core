@@ -1,10 +1,10 @@
 // Classes feature public surface (wraps awfl-web projects feature)
 
-export { useProjectsList as useClassesList } from '@awfl-web/features/projects/public'
-export type { Project as Class } from '@awfl-web/features/projects/public'
+export { useProjectsList as useClassesList } from '@awfl/web/features/projects/public'
+export type { Project as Class } from '@awfl/web/features/projects/public'
 
 // Map project selection helpers to class-named exports
-import { getSelectedProjectId, setSelectedProjectId } from '@awfl-web/features/projects/public'
+import { getSelectedProjectId, setSelectedProjectId } from '@awfl/web/features/projects/public'
 
 export { getSelectedProjectId as getSelectedClassId }
 
