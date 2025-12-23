@@ -15,6 +15,20 @@ Getting started
 4) Preview build
    npm run preview
 
+Environment configuration
+- Dev
+  - API base: leave VITE_API_BASE unset (or empty). The API client defaults to "/api" and Vite proxies to your local backend (see vite.config.ts).
+  - Optional: set VITE_SKIP_AUTH=1 to bypass auth locally if your backend allows it.
+  - Firebase: set VITE_FIREBASE_* in web/.env.local (already provided in this repo for local use).
+- Production
+  - API base: VITE_API_BASE=https://api.cornerstoneai.org (set in web/.env.production in this repo). The client will call `${VITE_API_BASE}/api/...`.
+  - Auth bypass should be disabled by default: VITE_SKIP_AUTH=0.
+  - Provide VITE_FIREBASE_* via your deploy environment if not bundling from .env.production.
+
+Validation
+- Local dev: run `npm run dev`, open the app, and verify network requests are relative to /api.
+- Production build: run `npm run build && npm run preview` and verify network requests target https://api.cornerstoneai.org.
+
 Project structure
 - src/app: app shell, theme provider, globals
 - src/pages: route pages (list, new, detail)
