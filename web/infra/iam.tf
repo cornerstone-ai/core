@@ -39,6 +39,14 @@ resource "google_project_iam_member" "deploy_artifact_writer" {
   member  = "serviceAccount:${google_service_account.deploy[0].email}"
 }
 
+# Grant Workflows Admin to the deploy SA (existing case)
+resource "google_project_iam_member" "deploy_workflows_admin_existing" {
+  count   = var.create_deploy_sa ? 1 : 0
+  project = var.project_id
+  role    = "roles/workflows.admin"
+  member  = "serviceAccount:${google_service_account.deploy[0].email}"
+}
+
 # Allow the deploy SA to act as the runtime service account used by Cloud Run (default compute SA by default)
 # This grants Service Account User on the default compute SA to the deploy SA.
 data "google_project" "current" {
