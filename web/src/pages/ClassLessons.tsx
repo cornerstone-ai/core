@@ -70,10 +70,7 @@ export function ClassLessonsPage() {
   const { ephemeralSessions, createNewSession } = useNewSessionCreation({
     userId: user?.uid || null,
     projectId: classId,
-    // No auto-exec for list creation; detail view execution is guarded separately
-    startWf: () => Promise.resolve(undefined),
     agentsApi,
-    autoStart: false,
   })
 
   const lessonsServer: Session[] = useMemo(() => sessions || [], [sessions])
@@ -133,7 +130,7 @@ export function ClassLessonsPage() {
   const [newOpen, setNewOpen] = useState(false)
 
   async function handlePromptSubmit(text: string) {
-    if (!awx?.canExecute) return
+    if (!awx?.workflowName) return
     try {
       setSubmitting(true)
       await awx.execute({ query: text })
@@ -377,16 +374,16 @@ export function ClassLessonsPage() {
               <div className="lesson-footer prompt-plain">
                 <PromptInput
                   placeholder={
-                    awx?.canExecute
-                      ? (awx?.workflowName ? `Trigger workflow ${awx.workflowName}…` : 'Type a prompt and press Enter…')
-                      : (awx?.agentsLoading ? 'Loading agents…' : 'Select an agent/workflow to enable execution…')
+                    awx?.workflowName
+                      ? `Trigger workflow ${awx.workflowName}…`
+                      : 'Select an agent/workflow to enable execution…'
                   }
-                  status={awx?.status}
+                  status={(awx as any)?.status}
                   running={awx?.running}
                   submitting={submitting}
                   onSubmit={handlePromptSubmit}
                   onStop={handleStop}
-                  disabled={!selectedId || !awx?.canExecute || awx?.agentsLoading}
+                  disabled={!selectedId || !awx?.workflowName}
                 />
               </div>
             )}
