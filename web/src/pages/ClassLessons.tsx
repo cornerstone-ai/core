@@ -12,7 +12,7 @@ import {
   useNewSessionCreation,
 } from '@awfl/web/features/sessions/public'
 import { useTopicContextYoj, YojMessageList } from '@awfl/web/features/yoj/public'
-import { PromptInput } from '@awfl/web/components/public'
+import { PromptInput, ErrorBanner } from '@awfl/web/components/public'
 import { useScrollHome } from '@awfl/web/core/public'
 import { useAgentWorkflowExecute } from '@awfl/web/features/agents/public'
 import { AgentModal, useAgentModalController, useSessionAgentConfig, useAgentsApi } from '../features/teachers/public'
@@ -157,18 +157,14 @@ export function ClassLessonsPage() {
     intervalMs: 1000,
   })
 
-  // Extract exec status error (if present) and expose as a dismissible alert
-  const execStatusErrorRaw = (awx as any)?.status?.error
+  // Derive latest exec error when latest status is Failed (match awfl-web logic)
   const execStatusError: string | null = useMemo(() => {
-    if (!execStatusErrorRaw) return null
-    if (typeof execStatusErrorRaw === 'string') return execStatusErrorRaw
-    if (typeof execStatusErrorRaw?.message === 'string' && execStatusErrorRaw.message.length > 0) return execStatusErrorRaw.message
-    try {
-      return JSON.stringify(execStatusErrorRaw)
-    } catch {
-      return String(execStatusErrorRaw)
-    }
-  }, [execStatusErrorRaw])
+    const failed = (awx as any)?.status === 'Failed'
+    if (!failed) return null
+    const msg = (awx as any)?.latest?.error
+    return msg || 'Execution failed'
+  }, [(awx as any)?.status, (awx as any)?.latest?.error])
+
   const [dismissedExecStatusError, setDismissedExecStatusError] = useState(false)
   // Reset dismissal when a new error appears/changes
   useEffect(() => {
@@ -282,52 +278,48 @@ export function ClassLessonsPage() {
               </div>
 
               {error && (
-                <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                  {error}
-                </div>
+                <ErrorBanner>{error}</ErrorBanner>
               )}
               {!showingAssignments && (
                 <>
                   {execError && (
-                    <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                      {execError}
-                    </div>
+                    <ErrorBanner variant="strong">{execError}</ErrorBanner>
                   )}
                   {(awx as any)?.error && (
-                    <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4 }}>
-                      {String((awx as any).error)}
-                    </div>
+                    <ErrorBanner style={{ marginTop: execError ? 4 : 0 }}>{String((awx as any).error)}</ErrorBanner>
                   )}
                   {/* New: Surface exec status error when present, with dismiss + optional retry */}
                   {execStatusError && !dismissedExecStatusError && (
-                    <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginTop: 4, display: 'flex', alignItems: 'flex-start', gap: 8, justifyContent: 'space-between' }}>
-                      <div style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{execStatusError}</div>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        {(awx as any)?.retry && (
+                    <ErrorBanner variant="strong">
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, justifyContent: 'space-between' }}>
+                        <div style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{execStatusError}</div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          {(awx as any)?.retry && (
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              onClick={async () => {
+                                try {
+                                  await (awx as any).retry()
+                                } finally {
+                                  setDismissedExecStatusError(true)
+                                }
+                              }}
+                            >
+                              Retry
+                            </button>
+                          )}
                           <button
                             type="button"
                             className="btn btn-secondary btn-sm"
-                            onClick={async () => {
-                              try {
-                                await (awx as any).retry()
-                              } finally {
-                                setDismissedExecStatusError(true)
-                              }
-                            }}
+                            onClick={() => setDismissedExecStatusError(true)}
+                            aria-label="Dismiss error"
                           >
-                            Retry
+                            Dismiss
                           </button>
-                        )}
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => setDismissedExecStatusError(true)}
-                          aria-label="Dismiss error"
-                        >
-                          Dismiss
-                        </button>
+                        </div>
                       </div>
-                    </div>
+                    </ErrorBanner>
                   )}
                 </>
               )}
@@ -442,9 +434,7 @@ export function ClassLessonsPage() {
 
       {loading && <div style={{ color: '#6b7280', marginBottom: 12 }}>Loading…</div>}
       {error && (
-        <div role="alert" style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 8, borderRadius: 8, marginBottom: 12 }}>
-          {error}
-        </div>
+        <ErrorBanner style={{ marginBottom: 12 }}>{error}</ErrorBanner>
       )}
 
       <ul className="grid-cards" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
