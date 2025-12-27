@@ -14,7 +14,7 @@ export function MusicToggle() {
   // Init engine lazily on first interaction
   const ensureEngine = React.useCallback(() => {
     if (!engineRef.current) {
-      engineRef.current = new MusicEngine({ volume, bpm: 120, theme })
+      engineRef.current = new MusicEngine({ volume, bpm: 120, theme, speed: 1 })
     }
     return engineRef.current
   }, [theme, volume])

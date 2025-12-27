@@ -10,10 +10,12 @@
     "lint": "echo 'TODO: add eslint' && exit 0"
   },
   "dependencies": {
-    "@awfl/web": "^0.1.6",
+    "@awfl/web": "^0.1.7",
+    "@tonejs/midi": "^2.0.28",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2"
+    "react-router-dom": "^6.26.2",
+    "tone": "^14.8.49"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

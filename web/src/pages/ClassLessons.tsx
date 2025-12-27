@@ -81,7 +81,8 @@ export function ClassLessonsPage() {
 
   // Detail route present? render the single-lesson view
   const selectedId = sessionIdParam || null
-  const selected = useMemo(() => (lessonsServer.find(s => s.id === selectedId) || null), [lessonsServer, selectedId])
+  // IMPORTANT: resolve selection from merged list to include ephemeral fields (agentId/workflowName)
+  const selected = useMemo(() => (lessons.find(s => s.id === selectedId) || null), [lessons, selectedId])
 
   // Assignments (session-scoped): counts + inline list
   const { counts: assignmentCounts, loading: countsLoading, reload: reloadAssignmentCounts } = useAssignmentCounts({ sessionId: selectedId, idToken, enabled: !!selectedId })
@@ -109,12 +110,17 @@ export function ClassLessonsPage() {
   const agent = useAgentModalController({ idToken, sessionId: selectedId || null, workflowName: sessionWorkflowName || null, enabled: !!selectedId })
   const agentConfig = useSessionAgentConfig({ idToken, sessionId: selectedId, enabled: !!selectedId })
 
+  // Build a minimal session-like object so awx can resolve agent/workflow from either persisted config or ephemeral selection
+  const sessionLike = useMemo(() => ({
+    agentId: (selected as any)?.agentId ?? (agentConfig as any)?.mapping?.agentId ?? (agentConfig as any)?.agent?.id ?? (agentConfig as any)?.agentId ?? null,
+    workflowName: (agentConfig as any)?.workflowName ?? (selected as any)?.workflowName ?? null,
+  }), [selected, (agentConfig as any)?.mapping?.agentId, (agentConfig as any)?.agent?.id, (agentConfig as any)?.agentId, (agentConfig as any)?.workflowName])
+
   // Turnkey workflow execution wired to resolved agent/workflow for this session
   const awx = useAgentWorkflowExecute({
     sessionId: selectedId || undefined,
     idToken,
-    pendingAgentId: (agentConfig as any)?.agent?.id || (agentConfig as any)?.agentId,
-    session: (selected as any) || undefined,
+    session: sessionLike as any,
     enabled: !!selectedId && !showingAssignments,
   })
 
